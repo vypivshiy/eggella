@@ -8,36 +8,39 @@
 
 Eggella is a framework for easy creating interactive prompt-line applications. 
 
-Design inspired by [vulcano](https://github.com/dgarana/vulcano) and various chatbots frameworks and built top on [python-prompt-toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit)
+Design inspired by [vulcano](https://github.com/dgarana/vulcano) and various chatbots frameworks 
+and built top on [prompt-toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit)
 
 ## Features:
 
-- python 3.8+
+- python 3.8+ support
 - arguments auto cast from function annotations
 - cross-platform (prompt-toolkit guarantees)
-- fsm
-- events
+- FSM
+- customized events
 - completer
 - ctx storage (dict)
 
 ## Examples:
 
 ### Basic
-```python
-from eggella import EgellaApp
 
-app = EgellaApp(__name__)
+```python
+from eggella import Eggella
+
+app = Eggella(__name__)
+
 
 @app.on_startup()
 def startup_event():
     print("Hello! this quick Eggella app example!")
 
-    
+
 @app.on_close()
 def close_event():
     print("Goodbye! :D")
-    
-    
+
+
 @app.on_command()
 def hello():
     return "Hello, world!"
@@ -47,16 +50,18 @@ def hello():
 def sum_(*args: int):
     return sum(args)
 
+
 if __name__ == '__main__':
     app.loop()
 ```
-### States
+### FSM example
+
 ```python
 from typing import Optional
 
 from prompt_toolkit.validation import Validator
 
-from eggella import EgellaApp
+from eggella import Eggella
 from eggella.fsm import IntState
 
 
@@ -64,6 +69,7 @@ class LoginForm(IntState):
     EMAIL = 0
     PASSWORD = 1
     ACCEPT = 2
+
 
 # prompt validators
 
@@ -75,8 +81,7 @@ email_validator = Validator.from_callable(
     lambda s: "@" in s,
     error_message="email is not valid")
 
-
-app = EgellaApp(__name__)
+app = Eggella(__name__)
 app.register_states(LoginForm)
 
 
