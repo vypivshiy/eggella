@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable
 
 from prompt_toolkit import print_formatted_text as print_ft
 from prompt_toolkit.formatted_text.html import HTML
@@ -10,6 +10,8 @@ from eggella.events.abc import ABCEvent
 
 
 class OnStartup(ABCEvent):
+    _STYLES = Style.from_dict({"help": "#80ff00", "close": "#ff0000", "cmd_key": "#7d7c80 italic"})
+
     def __call__(self):
         pass
 

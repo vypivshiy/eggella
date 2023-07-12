@@ -1,24 +1,21 @@
 from typing import Any, Callable, Dict, Hashable, Literal, Optional, Type, Union
 
-from prompt_toolkit import PromptSession
+from prompt_toolkit import HTML, PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
 from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
-from eggella.events.events import (
-    OnCommandCompleteSuccess,
-    OnCommandError,
-    OnCommandNotFound,
-    OnEOFError,
-    OnKeyboardInterrupt,
-    OnSuggest,
-)
 from eggella.exceptions import CommandNotFoundError, CommandParseError
 from eggella.fsm.fsm import FsmController, IntState
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
 
 PromptLikeMsg = Union[str, FormattedText, Callable[..., FormattedText]]
+
+_DEFAULT_INTRO_MSG = HTML(
+    "<ansired>Press |CTRL+C| or |CTRL+D| or type</ansired> exit <ansired>for close this app</ansired>\n"
+    "<ansigreen>Press |TAB| or type</ansigreen> help <ansigreen>for get commands information</ansigreen>"
+)
 
 
 class EgellaApp:
@@ -39,14 +36,8 @@ class EgellaApp:
         self.cmd = CmdShortCuts()
 
         self.CTX: Dict[Hashable, Any] = {}
+        self._intro: Union[HTML, PromptLikeMsg] = _DEFAULT_INTRO_MSG
 
-        # events
-        self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
-        self.eof_event: Callable[..., bool] = OnEOFError()
-        self.command_error_event: Callable[..., None] = OnCommandError()
-        self.command_not_found_event: Callable[..., None] = OnCommandNotFound()
-        self.command_complete_event: Callable[..., None] = OnCommandCompleteSuccess()
-        self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
         # managers
         self._command_manager: CommandManager = CommandManager(self)
         self._event_manager = EventManager(self)
@@ -54,42 +45,13 @@ class EgellaApp:
         # fsm
         self.fsm = FsmController(self)
 
-    def _handle_startup_events(self):
-        for event in self._event_manager.startup_events:
-            event()
+    @property
+    def intro(self):
+        return self._intro
 
-    def _handle_close_events(self):
-        for event in self._event_manager.close_events:
-            event()
-
-    def _handle_commands(self):
-        while True:
-            try:
-                completer = FuzzyCompleter(completer=self._command_manager.get_completer())
-                result = self.session.prompt(self.prompt_msg, completer=completer)
-                if not result:
-                    continue
-
-                if (tokens := result.split(" ", 1)) and len(tokens) == 1:
-                    key = tokens[0]
-                    args = ""
-                else:
-                    key, args = tokens[0], tokens[1]
-                if result := self._command_manager.exec(key, args):
-                    self.command_complete_event(result)
-            except CommandNotFoundError:
-                self.command_not_found_event(key, args)
-                self.command_suggest_event(key, self._command_manager.commands.keys())
-            except CommandParseError:
-                self.command_error_event(key, args)
-            except KeyboardInterrupt:
-                if self.kb_interrupt_event():
-                    break
-            except EOFError:
-                self.eof_event()
-
-    def _handle_fsm(self):
-        pass
+    @intro.setter
+    def intro(self, text: Union[HTML, PromptLikeMsg]):
+        self._intro = text
 
     def on_startup(self):
         return self._event_manager.startup()
@@ -135,13 +97,14 @@ class EgellaApp:
             cmd_handler=cmd_handler,
         )
 
-    def register_event(self, name: Literal["start", "close"], func: Callable):
-        if name == "start":
-            self._event_manager.register_event(name, func)
-        elif name == "close":
-            self._event_manager.register_event(name, func)
-            return
-        raise TypeError("Unknown event type")
+    def register_event(
+        self,
+        name: Literal[
+            "start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete", "command_suggest"
+        ],
+        func: Callable,
+    ) -> None:
+        self._event_manager.register_event(name, func)
 
     def has_command(self, key: str) -> bool:
         return bool(self._command_manager.commands.get(key, None))
@@ -153,6 +116,41 @@ class EgellaApp:
             raise KeyError
 
     def loop(self):
+        self.cmd.print_ft(self.intro)
         self._handle_startup_events()
         self._handle_commands()
         self._handle_close_events()
+
+    def _handle_startup_events(self):
+        for event in self._event_manager.startup_events:
+            event()
+
+    def _handle_close_events(self):
+        for event in self._event_manager.close_events:
+            event()
+
+    def _handle_commands(self):
+        while True:
+            try:
+                completer = FuzzyCompleter(completer=self._command_manager.get_completer())
+                result = self.session.prompt(self.prompt_msg, completer=completer)
+                if not result:
+                    continue
+
+                if (tokens := result.split(" ", 1)) and len(tokens) == 1:
+                    key = tokens[0]
+                    args = ""
+                else:
+                    key, args = tokens[0], tokens[1]
+                if result := self._command_manager.exec(key, args):
+                    self._event_manager.command_complete_event(result)
+            except CommandNotFoundError:
+                self._event_manager.command_not_found_event(key, args)
+                self._event_manager.command_suggest_event(key, self._command_manager.commands.keys())
+            except CommandParseError:
+                self._event_manager.command_error_event(key, args)
+            except KeyboardInterrupt:
+                if self._event_manager.kb_interrupt_event():
+                    break
+            except EOFError:
+                self._event_manager.eof_event()

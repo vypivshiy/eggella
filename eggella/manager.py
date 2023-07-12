@@ -5,6 +5,14 @@ from eggella.command.abc import ABCCommandHandler
 from eggella.command.completer import CommandCompleter
 from eggella.command.handler import CommandHandler
 from eggella.command.objects import Command
+from eggella.events.events import (
+    OnCommandCompleteSuccess,
+    OnCommandError,
+    OnCommandNotFound,
+    OnEOFError,
+    OnKeyboardInterrupt,
+    OnSuggest,
+)
 from eggella.exceptions import CommandNotFoundError
 from eggella.shortcuts.help_pager import gen_help_pager
 
@@ -106,7 +114,7 @@ class CommandManager:
     @staticmethod
     def _exit_command():
         """exit from this application"""
-        exit(1)
+        raise KeyboardInterrupt
 
     def _register_buildin_commands(self):
         self.register_command(self._help_command, "help", usage="help; help exit")
@@ -119,12 +127,40 @@ class EventManager:
         self.startup_events: List[Callable] = []
         self.close_events: List[Callable] = []
 
-    def register_event(self, name: Literal["start", "close"], func: Callable):
+        self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
+        self.eof_event: Callable[..., bool] = OnEOFError()
+        self.command_error_event: Callable[..., None] = OnCommandError()
+        self.command_not_found_event: Callable[..., None] = OnCommandNotFound()
+        self.command_complete_event: Callable[..., None] = OnCommandCompleteSuccess()
+        self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
+
+    def register_event(
+        self,
+        name: Literal[
+            "start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete", "command_suggest"
+        ],
+        func: Callable,
+    ):
         if name == "start":
             self.startup_events.append(func)
             return
         elif name == "close":
             self.close_events.append(func)
+            return
+        elif name == "kb_interrupt":
+            self.kb_interrupt_event = func
+            return
+        elif name == "eof":
+            self.eof_event = func
+            return
+        elif name == "command_not_found":
+            self.command_not_found_event = func
+            return
+        elif name == "command_complete":
+            self.command_complete_event = func
+            return
+        elif name == "command_suggest":
+            self.command_suggest_event = func
             return
         raise TypeError("Unknown event type")
 
