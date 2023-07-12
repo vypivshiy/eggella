@@ -41,7 +41,7 @@ def gen_help_pager(commands: Iterable["Command"]):
         [
             # The top toolbar.
             Window(
-                content=FormattedTextControl(status_bar_text),
+                content=FormattedTextControl(status_bar_text),  # type: ignore
                 height=D.exact(1),
                 style="class:status",
             ),
@@ -70,7 +70,7 @@ def gen_help_pager(commands: Iterable["Command"]):
     )
 
     # create application.
-    application = Application(
+    application = Application(  # type: ignore
         layout=Layout(root_container, focused_element=text_area),
         key_bindings=bindings,
         enable_page_navigation_bindings=True,

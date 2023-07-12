@@ -48,10 +48,10 @@ class CommandArgumentsCaster(ABCCommandArgumentsCaster):
                     bound.arguments[arg_name] = tc.cast(param.annotation, values)
         return bound.args, bound.kwargs
 
-    def __call__(self, fn: Callable, tokens: list[str]) -> Tuple[Tuple[Any], Dict[str, Any]]:
+    def __call__(self, fn: Callable, tokens: List[str]) -> Tuple[Tuple[Any], Dict[str, Any]]:
         sig = inspect.signature(fn)
         param_names = list(sig.parameters.keys())
-        args: list[Any] = []
+        args: List[Any] = []
         kwargs = {}
 
         for token in tokens:

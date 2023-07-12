@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Tuple, Dict
 
 
 class ABCCommandParser(ABC):
@@ -10,7 +10,7 @@ class ABCCommandParser(ABC):
 
 class ABCCommandArgumentsCaster(ABC):
     @abstractmethod
-    def __call__(self, fn: Callable, tokens: list[str]) -> Tuple[tuple[Any], dict[str, Any]]:
+    def __call__(self, fn: Callable, tokens: List[str]) -> Tuple[Tuple[Any], Dict[str, Any]]:
         pass
 
 

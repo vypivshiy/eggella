@@ -6,7 +6,6 @@ from typing import (
     Literal,
     Optional,
     Type,
-    TypeAlias,
     Union,
 )
 
@@ -28,7 +27,7 @@ from eggella.fsm.fsm import FsmController, IntState
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
 
-PromptLikeMsg: TypeAlias = Union[FormattedText, Callable[..., FormattedText]]
+PromptLikeMsg = Union[str, FormattedText, Callable[..., FormattedText]]
 
 
 class EgellaApp:
@@ -45,7 +44,7 @@ class EgellaApp:
     def __init__(self, app_name: str, msg: PromptLikeMsg = "~> "):
         self.app_name = app_name
         self.prompt_msg = msg
-        self.session = PromptSession(msg)
+        self.session: PromptSession = PromptSession(msg)
         self.cmd = CmdShortCuts()
 
         self.CTX: Dict[Hashable, Any] = {}

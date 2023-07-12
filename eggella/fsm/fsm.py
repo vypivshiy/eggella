@@ -27,7 +27,7 @@ class Fsm:
         self._all_states = state.list()
         self._start_state = state.first()
         self._end_state = state.last()
-        self._current_state = None
+        self._current_state: Optional[IntState] = None
 
     def add_handler(self, state: IntState, func: Callable):
         self.handlers[state] = func
