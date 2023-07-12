@@ -1,11 +1,11 @@
 import re
 from typing import List
 
-from eggella import EgellaApp
+from eggella import Eggella
 from eggella.command import CommandHandler, CommandParserRaw
 from eggella.command.command import ABCCommandParser
 
-app = EgellaApp(__name__)
+app = Eggella(__name__)
 
 
 class DigitParserOnly(ABCCommandParser):

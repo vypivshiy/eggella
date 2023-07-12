@@ -2,12 +2,11 @@
 import os
 from datetime import datetime
 from random import choice
+from string import hexdigits
 
 from prompt_toolkit.shortcuts import set_title
 
-from eggella import EgellaApp
-
-from string import hexdigits
+from eggella import Eggella
 
 
 def get_prompt():
@@ -19,7 +18,7 @@ def get_prompt():
     return [
         (rand_color, f"[{os.getlogin()}] "),
         ("bg:#008800 #ffffff", f" {now.hour:02}:{now.minute:02}:{now.second:02}"),
-        ("", " ~ ")
+        ("", " ~ "),
     ]
 
 
@@ -27,10 +26,10 @@ def result_output(result):
     print(f"Your output: {result}, meow ^^")
 
 
-app = EgellaApp(__name__, msg=get_prompt)
+app = Eggella(__name__, msg=get_prompt)
 app.intro = "my custom startup intro!"
 # or set custom PromptSession object
-app.session.refresh_interval = .5
+app.session.refresh_interval = 0.5
 
 # TODO implement all decorators
 app.register_event("start", lambda: print("new startup event"))

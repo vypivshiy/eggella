@@ -2,7 +2,7 @@ from typing import Optional
 
 from prompt_toolkit.validation import Validator
 
-from eggella import EgellaApp
+from eggella import Eggella
 from eggella.fsm import IntState
 
 
@@ -19,7 +19,7 @@ password_validator = Validator.from_callable(lambda s: len(s) > 6, error_message
 email_validator = Validator.from_callable(lambda s: "@" in s, error_message="email is not valid")
 
 
-app = EgellaApp(__name__)
+app = Eggella(__name__)
 app.register_states(LoginForm)
 
 

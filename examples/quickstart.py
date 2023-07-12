@@ -1,6 +1,6 @@
-from eggella import EgellaApp
+from eggella import Eggella
 
-app = EgellaApp(__name__)
+app = Eggella(__name__)
 
 
 @app.on_startup()
