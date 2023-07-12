@@ -39,6 +39,12 @@ dependencies = [
   "pytest",
 ]
 
+[tool.hatch.build.targets.sdist]
+include = [
+  "/README.md",
+  "/eggella",
+]
+
 [project.optional-dependencies]
 dev = ["ruff", "mypy", "black", "isort"]
 
