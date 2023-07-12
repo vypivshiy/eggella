@@ -1,4 +1,16 @@
-from typing import Any, Callable, Dict, Hashable, Literal, Optional, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Hashable,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    overload,
+)
 
 from prompt_toolkit import HTML, PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
@@ -10,7 +22,7 @@ from eggella.fsm.fsm import FsmController, IntState
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
 
-PromptLikeMsg = Union[str, FormattedText, Callable[..., FormattedText]]
+PromptLikeMsg = Union[str, FormattedText, Callable[..., Union[FormattedText, List[Tuple[str, str]]]]]
 
 _DEFAULT_INTRO_MSG = HTML(
     "<ansired>Press |CTRL+C| or |CTRL+D| or type</ansired> exit <ansired>for close this app</ansired>\n"
@@ -97,12 +109,28 @@ class EgellaApp:
             cmd_handler=cmd_handler,
         )
 
+    @overload
+    def register_event(
+        self,
+        name: Literal["start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete"],
+        func: Callable,
+    ) -> None:
+        pass
+
+    @overload
+    def register_event(
+        self,
+        name: Literal["command_suggest"],
+        func: Optional[Callable],
+    ) -> None:
+        pass
+
     def register_event(
         self,
         name: Literal[
             "start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete", "command_suggest"
         ],
-        func: Callable,
+        func: Optional[Callable],
     ) -> None:
         self._event_manager.register_event(name, func)
 

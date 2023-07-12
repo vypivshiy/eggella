@@ -139,24 +139,24 @@ class EventManager:
         name: Literal[
             "start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete", "command_suggest"
         ],
-        func: Callable,
+        func: Optional[Callable],
     ):
-        if name == "start":
+        if name == "start" and func:
             self.startup_events.append(func)
             return
-        elif name == "close":
+        elif name == "close" and func:
             self.close_events.append(func)
             return
-        elif name == "kb_interrupt":
+        elif name == "kb_interrupt" and func:
             self.kb_interrupt_event = func
             return
-        elif name == "eof":
+        elif name == "eof" and func:
             self.eof_event = func
             return
-        elif name == "command_not_found":
+        elif name == "command_not_found" and func:
             self.command_not_found_event = func
             return
-        elif name == "command_complete":
+        elif name == "command_complete" and func:
             self.command_complete_event = func
             return
         elif name == "command_suggest":
