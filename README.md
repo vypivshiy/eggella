@@ -20,6 +20,9 @@ and built top on [prompt-toolkit](https://github.com/prompt-toolkit/python-promp
 - customized events
 - completer
 - ctx storage (dict)
+## Install
+
+`pip install eggella`
 
 ## Examples:
 
