@@ -42,5 +42,5 @@ class Command(NamedTuple):
                 return f"{self.key} ({arg_list})\n\t{docstring}\nUSAGE:\n\t{self.usage}"
             return f"{self.key} ({arg_list})\n\t{docstring}"
         if self.usage:
-            f"{self.key} ({arg_list}) - {docstring}\n\tUSAGE:\n{self.usage}"
+            return f"{self.key} ({arg_list}) - {docstring}\n\tUSAGE:\n{self.usage}"
         return f"{self.key} ({arg_list}) - {docstring}"
