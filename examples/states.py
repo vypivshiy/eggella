@@ -11,15 +11,12 @@ class LoginForm(IntState):
     PASSWORD = 1
     ACCEPT = 2
 
+
 # prompt validators
 
-password_validator = Validator.from_callable(
-    lambda s: len(s) > 6,
-    error_message="password len should be bigger than 6")
+password_validator = Validator.from_callable(lambda s: len(s) > 6, error_message="password len should be bigger than 6")
 
-email_validator = Validator.from_callable(
-    lambda s: "@" in s,
-    error_message="email is not valid")
+email_validator = Validator.from_callable(lambda s: "@" in s, error_message="email is not valid")
 
 
 app = EgellaApp(__name__)

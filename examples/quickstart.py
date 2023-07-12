@@ -26,4 +26,3 @@ def sum_(*args: int):
 
 if __name__ == '__main__':
     app.loop()
-    
