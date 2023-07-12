@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Tuple, Dict
+from typing import Any, Callable, Dict, List, Tuple
 
 
 class ABCCommandParser(ABC):

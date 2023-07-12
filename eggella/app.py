@@ -1,13 +1,4 @@
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Hashable,
-    Literal,
-    Optional,
-    Type,
-    Union,
-)
+from typing import Any, Callable, Dict, Hashable, Literal, Optional, Type, Union
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
