@@ -30,10 +30,10 @@ _DEFAULT_INTRO_MSG = HTML(
 )
 
 
-class EgellaApp:
-    __app_instances__: Dict[str, "EgellaApp"] = {}
+class Eggella:
+    __app_instances__: Dict[str, "Eggella"] = {}
 
-    def __new__(cls, app_name: str, msg: PromptLikeMsg = "~> ") -> "EgellaApp":
+    def __new__(cls, app_name: str, msg: PromptLikeMsg = "~> ") -> "Eggella":
         if _app := cls.__app_instances__.get(app_name):
             return _app
 

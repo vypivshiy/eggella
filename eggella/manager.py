@@ -17,11 +17,11 @@ from eggella.exceptions import CommandNotFoundError
 from eggella.shortcuts.help_pager import gen_help_pager
 
 if TYPE_CHECKING:
-    from eggella.app import EgellaApp
+    from eggella.app import Eggella
 
 
 class CommandManager:
-    def __init__(self, app: "EgellaApp"):
+    def __init__(self, app: "Eggella"):
         self._app = app
         self.commands: Dict[str, Command] = {}
         self._register_buildin_commands()
@@ -122,7 +122,7 @@ class CommandManager:
 
 
 class EventManager:
-    def __init__(self, app: "EgellaApp"):
+    def __init__(self, app: "Eggella"):
         self.app = app
         self.startup_events: List[Callable] = []
         self.close_events: List[Callable] = []

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 if TYPE_CHECKING:
-    from eggella.app import EgellaApp
+    from eggella.app import Eggella
 
 
 class IntState(int, Enum):
@@ -81,7 +81,7 @@ class Fsm:
 
 
 class FsmController:
-    def __init__(self, app: "EgellaApp"):
+    def __init__(self, app: "Eggella"):
         self.fsm_storage: Dict[str, Fsm] = {}
         self._current_fsm: Optional[Fsm] = None
         self.__app = app
