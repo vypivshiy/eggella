@@ -1,14 +1,28 @@
-from typing import (Any, Callable, Dict, Hashable, Literal, Optional, Type,
-                    TypeAlias, Union)
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Hashable,
+    Literal,
+    Optional,
+    Type,
+    TypeAlias,
+    Union,
+)
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
 from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
-from eggella.events.events import (OnCommandCompleteSuccess, OnCommandError,
-                                   OnCommandNotFound, OnEOFError,
-                                   OnKeyboardInterrupt, OnSuggest)
+from eggella.events.events import (
+    OnCommandCompleteSuccess,
+    OnCommandError,
+    OnCommandNotFound,
+    OnEOFError,
+    OnKeyboardInterrupt,
+    OnSuggest,
+)
 from eggella.exceptions import CommandNotFoundError, CommandParseError
 from eggella.fsm.fsm import FsmController, IntState
 from eggella.manager import CommandManager, EventManager
@@ -61,9 +75,7 @@ class EgellaApp:
     def _handle_commands(self):
         while True:
             try:
-                completer = FuzzyCompleter(
-                    completer=self._command_manager.get_completer()
-                )
+                completer = FuzzyCompleter(completer=self._command_manager.get_completer())
                 result = self.session.prompt(self.prompt_msg, completer=completer)
                 if not result:
                     continue

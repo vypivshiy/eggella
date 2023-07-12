@@ -39,22 +39,16 @@ class CommandArgumentsCaster(ABCCommandArgumentsCaster):
             if param := params.get(arg_name):
                 # *args
                 if isinstance(values, tuple) and param.kind is param.VAR_POSITIONAL:
-                    bound.arguments[arg_name] = tuple(
-                        tc.cast(param.annotation, v) for v in values
-                    )
+                    bound.arguments[arg_name] = tuple(tc.cast(param.annotation, v) for v in values)
                 # **kwargs
                 elif isinstance(values, dict) and param.kind is param.VAR_KEYWORD:
-                    bound.arguments[arg_name] = {
-                        k: tc.cast(param.annotation, v) for k, v in values.items()
-                    }
+                    bound.arguments[arg_name] = {k: tc.cast(param.annotation, v) for k, v in values.items()}
                 # positional
                 else:
                     bound.arguments[arg_name] = tc.cast(param.annotation, values)
         return bound.args, bound.kwargs
 
-    def __call__(
-        self, fn: Callable, tokens: list[str]
-    ) -> Tuple[Tuple[Any], Dict[str, Any]]:
+    def __call__(self, fn: Callable, tokens: list[str]) -> Tuple[Tuple[Any], Dict[str, Any]]:
         sig = inspect.signature(fn)
         param_names = list(sig.parameters.keys())
         args: list[Any] = []

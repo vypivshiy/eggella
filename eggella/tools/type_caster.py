@@ -41,9 +41,7 @@ class TypeCaster:
             elif origin is dict:
                 key_type, value_type = args
                 return {
-                    cls.cast(type_hint=key_type, value=k): cls.cast(
-                        type_hint=value_type, value=v
-                    )
+                    cls.cast(type_hint=key_type, value=k): cls.cast(type_hint=value_type, value=v)
                     for k, v in value.items()
                 }
             # Optional

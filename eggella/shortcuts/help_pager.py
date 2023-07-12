@@ -16,9 +16,7 @@ if TYPE_CHECKING:
 
 def gen_help_pager(commands: Iterable["Command"]):
     text = "\n".join(comma.help for comma in commands)
-    search_field = SearchToolbar(
-        text_if_not_searching=[("class:not-searching", "Press '/' to start searching.")]
-    )
+    search_field = SearchToolbar(text_if_not_searching=[("class:not-searching", "Press '/' to start searching.")])
 
     text_area = TextArea(
         text=text,

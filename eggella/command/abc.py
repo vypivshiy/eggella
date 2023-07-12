@@ -10,9 +10,7 @@ class ABCCommandParser(ABC):
 
 class ABCCommandArgumentsCaster(ABC):
     @abstractmethod
-    def __call__(
-        self, fn: Callable, tokens: list[str]
-    ) -> Tuple[tuple[Any], dict[str, Any]]:
+    def __call__(self, fn: Callable, tokens: list[str]) -> Tuple[tuple[Any], dict[str, Any]]:
         pass
 
 

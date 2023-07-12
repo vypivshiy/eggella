@@ -1,6 +1,5 @@
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type,
-                    Union)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type, Union
 
 if TYPE_CHECKING:
     from eggella.app import EgellaApp

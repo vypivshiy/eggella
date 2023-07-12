@@ -52,9 +52,7 @@ class OnCommandNotFound(ABCEvent):
 
     def __call__(self, key: str, inline_arguments: str):
         print_ft(
-            HTML(
-                f"<ansired>Error!</ansired> command <cmd_key>{key}</cmd_key> not founded"
-            ),
+            HTML(f"<ansired>Error!</ansired> command <cmd_key>{key}</cmd_key> not founded"),
             style=self._STYLE,
         )
 
