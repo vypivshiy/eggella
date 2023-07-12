@@ -1,0 +1,156 @@
+from typing import (Any, Callable, Dict, Hashable, Literal, Optional, Type,
+                    TypeAlias, Union)
+
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
+from prompt_toolkit.formatted_text import FormattedText
+
+from eggella.command.abc import ABCCommandHandler
+from eggella.events.events import (OnCommandCompleteSuccess, OnCommandError,
+                                   OnCommandNotFound, OnEOFError,
+                                   OnKeyboardInterrupt, OnSuggest)
+from eggella.exceptions import CommandNotFoundError, CommandParseError
+from eggella.fsm.fsm import FsmController, IntState
+from eggella.manager import CommandManager, EventManager
+from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
+
+PromptLikeMsg: TypeAlias = Union[FormattedText, Callable[..., FormattedText]]
+
+
+class EgellaApp:
+    __app_instances__: Dict[str, "EgellaApp"] = {}
+
+    def __new__(cls, app_name: str, msg: PromptLikeMsg = "~> ") -> "EgellaApp":
+        if _app := cls.__app_instances__.get(app_name):
+            return _app
+
+        new_app = super().__new__(cls)
+        cls.__app_instances__[app_name] = new_app
+        return new_app
+
+    def __init__(self, app_name: str, msg: PromptLikeMsg = "~> "):
+        self.app_name = app_name
+        self.prompt_msg = msg
+        self.session = PromptSession(msg)
+        self.cmd = CmdShortCuts()
+
+        self.CTX: Dict[Hashable, Any] = {}
+
+        # events
+        self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
+        self.eof_event: Callable[..., bool] = OnEOFError()
+        self.command_error_event: Callable[..., None] = OnCommandError()
+        self.command_not_found_event: Callable[..., None] = OnCommandNotFound()
+        self.command_complete_event: Callable[..., None] = OnCommandCompleteSuccess()
+        self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
+        # managers
+        self._command_manager: CommandManager = CommandManager(self)
+        self._event_manager = EventManager(self)
+
+        # fsm
+        self.fsm = FsmController(self)
+
+    def _handle_startup_events(self):
+        for event in self._event_manager.startup_events:
+            event()
+
+    def _handle_close_events(self):
+        for event in self._event_manager.close_events:
+            event()
+
+    def _handle_commands(self):
+        while True:
+            try:
+                completer = FuzzyCompleter(
+                    completer=self._command_manager.get_completer()
+                )
+                result = self.session.prompt(self.prompt_msg, completer=completer)
+                if not result:
+                    continue
+
+                if (tokens := result.split(" ", 1)) and len(tokens) == 1:
+                    key = tokens[0]
+                    args = ""
+                else:
+                    key, args = tokens[0], tokens[1]
+                if result := self._command_manager.exec(key, args):
+                    self.command_complete_event(result)
+            except CommandNotFoundError:
+                self.command_not_found_event(key, args)
+                self.command_suggest_event(key, self._command_manager.commands.keys())
+            except CommandParseError:
+                self.command_error_event(key, args)
+            except KeyboardInterrupt:
+                if self.kb_interrupt_event():
+                    break
+            except EOFError:
+                self.eof_event()
+
+    def _handle_fsm(self):
+        pass
+
+    def on_startup(self):
+        return self._event_manager.startup()
+
+    def on_close(self):
+        return self._event_manager.close()
+
+    def on_command(
+        self,
+        key: Optional[str] = None,
+        short_description: Optional[str] = None,
+        *,
+        usage: Optional[str] = None,
+        cmd_handler: Optional[ABCCommandHandler] = None,
+    ):
+        return self._command_manager.command(
+            key,
+            short_description=short_description,
+            usage=usage,
+            cmd_handler=cmd_handler,
+        )
+
+    def on_state(self, state: IntState):
+        return self.fsm.state(state)
+
+    def register_states(self, states: Type[IntState]):
+        self.fsm.attach(states)
+
+    def register_command(
+        self,
+        func: Callable,
+        key: Optional[str] = None,
+        short_description: Optional[str] = None,
+        *,
+        usage: Optional[str] = None,
+        cmd_handler: Optional[ABCCommandHandler] = None,
+    ):
+        self._command_manager.register_command(
+            func,
+            key,
+            short_description=short_description,
+            usage=usage,
+            cmd_handler=cmd_handler,
+        )
+
+    def register_event(self, name: Literal["start", "close"], func: Callable):
+        if name == "start":
+            self._event_manager.register_event(name, func)
+        elif name == "close":
+            self._event_manager.register_event(name, func)
+            return
+        raise TypeError("Unknown event type")
+
+    def has_command(self, key: str) -> bool:
+        return bool(self._command_manager.commands.get(key, None))
+
+    def remove_command(self, key: str):
+        if self.has_command(key):
+            self._command_manager.commands.pop(key)
+        else:
+            raise KeyError
+
+    def loop(self):
+        self._handle_startup_events()
+        self._handle_commands()
+        self._handle_close_events()
