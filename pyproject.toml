@@ -107,6 +107,7 @@ unfixable = [
 exclude = [
   "examples",
   "venv",
+  "__init__.py"
 ]
 
 [tool.ruff.isort]
