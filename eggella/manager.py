@@ -10,7 +10,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    Union,
 )
 
 from eggella.command.abc import ABCCommandHandler
@@ -32,14 +31,15 @@ if TYPE_CHECKING:
     from eggella.app import Eggella
 
 
-_ErrorEventsMapping = Dict[str, Tuple[Callable, Union[Type[BaseException], Tuple[Type[BaseException], ...]]]]
+_ErrorEventsMapping = Dict[str, Tuple[Type[BaseException], ...]]
 
 
 class CommandManager:
     def __init__(self, app: "Eggella"):
         self._app = app
         self.commands: Dict[str, Command] = {}
-        self.error_handlers: Dict[str, Callable[..., Any]] = {}
+        self.error_events: Dict[str, Callable[[str, BaseException, str, str], Any]] = {}
+        self.handled_exceptions: _ErrorEventsMapping = {}
         self._register_buildin_commands()
 
     @staticmethod
@@ -56,34 +56,38 @@ class CommandManager:
         return tuple(args), kwargs
 
     def exec(self, key: str, args: str):
-        if command := self.commands.get(key):
-            try:
-                return command.handle(args)
-            except BaseException as e:
-                if err_handler := self.error_handlers.get(command.fn.__name__):
+        command = self.get(key)
+        try:
+            return command.handle(args)
+        except BaseException as e:
+            if err_handler := self.error_events.get(command.fn.__name__):
+                handle_exceptions = self.handled_exceptions.get(command.fn.__name__, None)
+                if handle_exceptions and any(e.__class__ == exc for exc in handle_exceptions):
                     _args, _kwargs = self._simple_parse_arguments(args)
                     return err_handler(key, e, *_args, **_kwargs)
                 else:
                     raise e
-        else:
-            raise CommandNotFoundError("Command not founded")
+            raise e
 
     def get_completer(self) -> CommandCompleter:
         return CommandCompleter(self)  # type: ignore
 
-    def on_error(self, errors: Union[Type[BaseException], Tuple[Type[BaseException], ...]]):
-        def decorator(handler: Callable[..., Any]):
+    def on_error(self, *errors: Type[BaseException]):
+        def decorator(handler: Callable[[str, BaseException, str, str], Any]):
             @wraps(handler)
             def decorator_wrapper(func: Callable[..., Any]):
-                if not self.error_handlers.get(func.__name__):
-                    self.error_handlers[func.__name__] = handler
+                if not self.error_events.get(func.__name__):
+                    self.error_events[func.__name__] = handler
+                    self.handled_exceptions[func.__name__] = errors
 
                 @wraps(func)
-                def wrapper(*args: Any, **kwargs: Dict[str, Any]):
+                def wrapper(*args, **kwargs):
                     try:
                         return func(*args, **kwargs)
-                    except errors:
-                        return handler(*args, **kwargs)
+                    except BaseException as e:
+                        if any(e.__class__ == exc for exc in errors):
+                            return handler("", e, *args, **kwargs)
+                        raise e
 
                 return wrapper
 
@@ -92,12 +96,12 @@ class CommandManager:
         return decorator
 
     @property
-    def all_completions(self):
+    def all_completions(self) -> List[Tuple[str, str]]:
         return [com.completion for com in self.commands.values()]
 
     def get(self, key: str) -> Command:
-        if comma := self.commands.get(key, None):
-            return comma
+        if command := self.commands.get(key, None):
+            return command
         raise CommandNotFoundError(f"Command {key} not founded")
 
     def command(

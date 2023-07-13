@@ -79,8 +79,8 @@ class Eggella:
     def on_close(self):
         return self._event_manager.close()
 
-    def on_error(self, errors: Union[Type[BaseException], Tuple[Type[BaseException], ...]]):
-        return self._command_manager.on_error(errors)
+    def on_error(self, *errors: Type[BaseException]):
+        return self._command_manager.on_error(*errors)
 
     def on_command(
         self,
