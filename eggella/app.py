@@ -49,13 +49,21 @@ class Eggella:
 
         self.CTX: Dict[Hashable, Any] = {}
         self._intro: Union[HTML, PromptLikeMsg] = _DEFAULT_INTRO_MSG
-
+        self._doc: str = ""
         # managers
         self._command_manager: CommandManager = CommandManager(self)
         self._event_manager = EventManager(self)
 
         # fsm
         self.fsm = FsmController(self)
+
+    @property
+    def documentation(self):
+        return self._doc
+
+    @documentation.setter
+    def documentation(self, text: str):
+        self._doc = text
 
     @property
     def intro(self):
