@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple, List
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
 
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.handler import CommandHandler
