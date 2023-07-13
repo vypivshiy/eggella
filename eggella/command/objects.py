@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple, List
 
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.handler import CommandHandler
@@ -17,30 +17,35 @@ class Command(NamedTuple):
         return self.fn(*args, **kwargs)
 
     @property
-    def short_desc(self):
+    def arguments(self) -> List[str]:
         args = inspect.signature(self.fn).parameters.values()
-        arg_list = ", ".join(str(arg) for arg in args)
-        docstring = inspect.getdoc(self.fn) or ""
-        if self.short_description:
-            return f"({arg_list}) - {self.short_description}"
-        elif docstring:
-            short_desc = docstring.split("\n")[0]
-            return f"({arg_list}) - {short_desc}"
-        return f"({arg_list})"
+        return [str(arg) for arg in args]
 
     @property
-    def completion(self):
+    def docstring(self) -> str:
+        return inspect.getdoc(self.fn) or ""
+
+    @property
+    def short_desc(self):
+        arg_list = " ".join(f"[{arg}]" for arg in self.arguments)
+        if self.short_description:
+            return f"({arg_list}) - {self.short_description}"
+        elif self.docstring:
+            short_desc = self.docstring.split("\n")[0]
+            return f"{arg_list} - {short_desc}"
+        return f"{arg_list}"
+
+    @property
+    def completion(self) -> Tuple[str, str]:
         return self.key, self.short_desc
 
     @property
     def help(self):
-        args = inspect.signature(self.fn).parameters.values()
-        arg_list = ", ".join(str(arg) for arg in args)
-        docstring = inspect.getdoc(self.fn) or ""
-        if len(docstring.split("\n")) > 1:
+        arg_list = " ".join(f"[{arg}]" for arg in self.arguments)
+        if len(self.docstring.split("\n")) > 1:
             if self.usage:
-                return f"{self.key} ({arg_list})\n\t{docstring}\nUSAGE:\n\t{self.usage}"
-            return f"{self.key} ({arg_list})\n\t{docstring}"
+                return f"      {self.key} ({arg_list})\n            {self.docstring}\nUSAGE:\n      {self.usage}"
+            return f"      {self.key} ({arg_list})\n            {self.docstring}"
         if self.usage:
-            return f"{self.key} ({arg_list}) - {docstring}\n\tUSAGE:\n{self.usage}"
-        return f"{self.key} ({arg_list}) - {docstring}"
+            return f"      {self.key} ({arg_list}) - {self.docstring}\nUSAGE:\n      {self.usage}"
+        return f"      {self.key} ({arg_list}) - {self.docstring}"
