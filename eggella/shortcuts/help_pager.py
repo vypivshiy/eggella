@@ -10,29 +10,75 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import SearchToolbar, TextArea
 
+
 if TYPE_CHECKING:
     from eggella.command.objects import Command
+    from eggella import Eggella
 
 
-def gen_help_pager(commands: Iterable["Command"]):
-    text = "\n".join(comma.help for comma in commands)
+def _render_text(app: "Eggella", commands: Iterable["Command"]):
+    """
+    {{APP DOCUMENTATION}}
+
+    COMMANDS
+       {{comma1}} - [arg1] [arg2] - {{short description}}
+           {{description}}
+           {{description}}
+           {{description}}
+       Usage:
+           {{USAGE}}
+           {{USAGE}}
+
+       {{comma2}} - [arg1] [arg2] - {{short description}}
+           {{description}}
+           {{description}}
+           {{description}}
+       Usage:
+           {{USAGE}}
+           {{USAGE}}
+
+       {{comma3}} - [arg1] [arg2] - {{short description}}
+           {{description}}
+           {{description}}
+           {{description}}
+
+    """
+
+    text = app.documentation
+    text += "\n"
+    text += "COMMANDS:\n"
+    for command in commands:
+        args = " ".join([f"[{arg}]" for arg in command.arguments])
+        text += f"    {command.key} {args}\n"
+        if command.short_description:
+            for line in command.short_description.split("\n"):
+                text += f"        {line}\n"
+        else:
+            for line in command.docstring.split("\n"):
+                text += f"        {line}\n"
+        text += "\n"
+        if command.usage:
+            text += "        USAGE:\n"
+            for line in command.usage.split("\n"):
+                text += f"            {line}\n"
+            text += "\n"
+    return text
+
+
+def gen_help_pager(app: "Eggella", commands: Iterable["Command"]):
+    text = _render_text(app, commands)
     search_field = SearchToolbar(text_if_not_searching=[("class:not-searching", "Press '/' to start searching.")])
 
     text_area = TextArea(
         text=text,
         read_only=True,
         scrollbar=True,
-        line_numbers=True,
         search_field=search_field,
     )
     status_bar_text = [
-        ("class:status", "Help page" + " - "),
-        (
-            "class:status.position",
-            f"{text_area.document.cursor_position_row + 1}:{text_area.document.cursor_position_col + 1}",
-        ),
+        ("class:status", "Help page"),
         ("class:status", " - Press "),
-        ("class:status.key", "Ctrl-C"),
+        ("class:status.key", "Ctrl-C or Q"),
         ("class:status", " to exit, "),
         ("class:status.key", "/"),
         ("class:status", " for searching."),
@@ -73,7 +119,7 @@ def gen_help_pager(commands: Iterable["Command"]):
     application = Application(  # type: ignore
         layout=Layout(root_container, focused_element=text_area),
         key_bindings=bindings,
-        enable_page_navigation_bindings=True,
+        enable_page_navigation_bindings=True,  # type: ignore
         mouse_support=True,
         style=style,
         full_screen=True,

@@ -104,8 +104,8 @@ class CommandManager:
         """show help or show pager documentation for all commands if not argument passed"""
         if not key:
             commands = self.commands.values()
-            gen_help_pager(commands)
-            return ""
+            gen_help_pager(self._app, commands)
+            return
         elif comma := self.commands.get(key):
             return f"{key} - {comma.short_desc}"
         else:
