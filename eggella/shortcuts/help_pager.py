@@ -10,10 +10,9 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import SearchToolbar, TextArea
 
-
 if TYPE_CHECKING:
-    from eggella.command.objects import Command
     from eggella import Eggella
+    from eggella.command.objects import Command
 
 
 def _render_text(app: "Eggella", commands: Iterable["Command"]):
