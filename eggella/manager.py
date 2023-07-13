@@ -1,5 +1,17 @@
+import shlex
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.completer import CommandCompleter
@@ -20,20 +32,64 @@ if TYPE_CHECKING:
     from eggella.app import Eggella
 
 
+_ErrorEventsMapping = Dict[str, Tuple[Callable, Union[Type[BaseException], Tuple[Type[BaseException], ...]]]]
+
+
 class CommandManager:
     def __init__(self, app: "Eggella"):
         self._app = app
         self.commands: Dict[str, Command] = {}
+        self.error_handlers: Dict[str, Callable[..., Any]] = {}
         self._register_buildin_commands()
+
+    @staticmethod
+    def _simple_parse_arguments(raw_command: str) -> Tuple[Tuple[str, ...], Dict[str, str]]:
+        tokens = shlex.split(raw_command)
+        args: List[str] = []
+        kwargs: Dict[str, str] = {}
+        for token in tokens:
+            if "=" in token:
+                key, value = token.split("=", 1)
+                kwargs[key] = value
+            else:
+                args.append(token)
+        return tuple(args), kwargs
 
     def exec(self, key: str, args: str):
         if command := self.commands.get(key):
-            return command.handle(args)
+            try:
+                return command.handle(args)
+            except BaseException as e:
+                if err_handler := self.error_handlers.get(command.fn.__name__):
+                    _args, _kwargs = self._simple_parse_arguments(args)
+                    return err_handler(key, e, *_args, **_kwargs)
+                else:
+                    raise e
         else:
-            raise CommandNotFoundError("Command not fouded")
+            raise CommandNotFoundError("Command not founded")
 
     def get_completer(self) -> CommandCompleter:
-        return CommandCompleter(self)
+        return CommandCompleter(self)  # type: ignore
+
+    def on_error(self, errors: Union[Type[BaseException], Tuple[Type[BaseException], ...]]):
+        def decorator(handler: Callable[..., Any]):
+            @wraps(handler)
+            def decorator_wrapper(func: Callable[..., Any]):
+                if not self.error_handlers.get(func.__name__):
+                    self.error_handlers[func.__name__] = handler
+
+                @wraps(func)
+                def wrapper(*args: Any, **kwargs: Dict[str, Any]):
+                    try:
+                        return func(*args, **kwargs)
+                    except errors:
+                        return handler(*args, **kwargs)
+
+                return wrapper
+
+            return decorator_wrapper
+
+        return decorator
 
     @property
     def all_completions(self):
@@ -126,6 +182,7 @@ class EventManager:
         self.app = app
         self.startup_events: List[Callable] = []
         self.close_events: List[Callable] = []
+        self.errors_events: Dict[str, Callable] = {}
 
         self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
         self.eof_event: Callable[..., bool] = OnEOFError()

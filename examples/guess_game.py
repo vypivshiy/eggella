@@ -30,9 +30,7 @@ app.CTX["stats"] = {"win": 0, "lose": 0}
 )
 def start_game(start_num: int = 0, end_num: int = 100, attempts: int = 5):
     """start game. can configurate rules"""
-    app.cmd.print_ft(
-        f"Game config: minimal number={start_num}, max_number={end_num}, attempts={attempts}"
-    )
+    app.cmd.print_ft(f"Game config: minimal number={start_num}, max_number={end_num}, attempts={attempts}")
     app.cmd.print_ft(HTML("<seagreen>Start game:</seagreen>"))
     app.CTX["game"] = {
         "min": start_num,
@@ -49,15 +47,12 @@ def show_stats():
     """show game session stats"""
     win = app.CTX["stats"]["win"]
     lose = app.CTX["stats"]["lose"]
-    app.cmd.print_ft(HTML(
-        f"Wins: <ansigreen>{win}</ansigreen>\nDefeats: <ansired>{lose}</ansired>"
-    ))
+    app.cmd.print_ft(HTML(f"Wins: <ansigreen>{win}</ansigreen>\nDefeats: <ansired>{lose}</ansired>"))
     return
 
 
 @app.on_state(GameStates.GAME)
 def game():
-
     if app.CTX["game"]["attempts"] == 0:
         return app.fsm.set(GameStates.LOSE)
 
@@ -107,9 +102,7 @@ def _restart_game():
 
 @app.on_state(GameStates.LOSE)
 def _lose_game():
-    app.cmd.prompt(
-        HTML(f"<ansired>Defeated</ansired> Correct answer {app.CTX['game']['digit']}")
-    )
+    app.cmd.prompt(HTML(f"<ansired>Defeated</ansired> Correct answer {app.CTX['game']['digit']}"))
     app.CTX["stats"]["lose"] += 1
     return app.fsm.finish()
 

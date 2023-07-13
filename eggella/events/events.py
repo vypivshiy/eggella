@@ -82,3 +82,8 @@ class OnCommandCompleteSuccess(ABCEvent):
     def __call__(self, result: Any):
         if result:
             print_ft(HTML(f"<out>{result}</out>"), style=self._STYLE)
+
+
+class OnCommandArgumentsException(ABCEvent):
+    def __call__(self, key: str, error: BaseException, *args, **kwargs):
+        pass

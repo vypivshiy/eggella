@@ -79,6 +79,9 @@ class Eggella:
     def on_close(self):
         return self._event_manager.close()
 
+    def on_error(self, errors: Union[Type[BaseException], Tuple[Type[BaseException], ...]]):
+        return self._command_manager.on_error(errors)
+
     def on_command(
         self,
         key: Optional[str] = None,
@@ -178,6 +181,7 @@ class Eggella:
                     args = ""
                 else:
                     key, args = tokens[0], tokens[1]
+
                 if result := self._command_manager.exec(key, args):
                     self._event_manager.command_complete_event(result)
             except CommandNotFoundError:
