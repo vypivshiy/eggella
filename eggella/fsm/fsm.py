@@ -42,16 +42,21 @@ class Fsm:
 
         return decorator
 
+    def _exec_state(self, state: "IntState"):
+        if not self.handlers.get(state, None):
+            raise KeyError(f"State {state} is not registered")
+        return self.handlers[state]()
+
     def set(self, state: "IntState"):
         self._current_state = state
-        return self.handlers[self._current_state]()
+        return self._exec_state(self._current_state)
 
     def clear(self):
         self.ctx.clear()
 
     def run(self, state: Optional["IntState"] = None):
         self._current_state = state or self._start_state
-        return self.handlers[self._current_state]()
+        return self._exec_state(self._current_state)
 
     def finish(self) -> None:
         self.ctx.clear()
@@ -61,7 +66,10 @@ class Fsm:
         index = self._all_states.index(self._current_state)
         if index < len(self._all_states):
             self._current_state = self._all_states[index + 1]
-            return self.handlers[self._current_state]()
+            return self._exec_state(self._current_state)
+        elif index == len(self._all_states) - 1 and self._all_states[index] == self._end_state:
+            self.finish()
+            return
         else:
             raise IndexError("States out of range")
 
@@ -69,7 +77,10 @@ class Fsm:
         index = self._all_states.index(self._current_state)
         if index < len(self._all_states) and index != 0:
             self._current_state = self._all_states[index - 1]
-            return self.handlers[self._current_state]()
+            return self._exec_state(self._current_state)
+        elif self._current_state == self._all_states[0]:
+            self.finish()
+            return
         else:
             raise IndexError("States out of range")
 
@@ -110,6 +121,10 @@ class FsmController:
 
     def state(self, state: IntState):
         """state decorator"""
+        if not self.fsm_storage.get(state.__class__.__name__):
+            raise RuntimeError(f"State `{state.__class__.__name__}` is not registered in `{self.__app.app_name}`\n"
+                               f"Register this state group in application "
+                               f"by `register_states({state.__class__.__name__}) method`")
         return self.fsm_storage[state.__class__.__name__].on_state(state)
 
     def run(self, state: Union[IntState, Type[IntState]]):
