@@ -1,21 +1,12 @@
 import ast
 import inspect
-import shlex
 from contextlib import suppress
 from typing import Any, Callable, Dict, List, Tuple
 
-from eggella.command.abc import ABCCommandArgumentsCaster, ABCCommandParser
+from eggella.command.abc import ABCCommandArgumentsCaster
 from eggella.tools.type_caster import TypeCaster
 
-
-class CommandParser(ABCCommandParser):
-    def __call__(self, raw_command: str) -> List[str]:
-        return shlex.split(raw_command)
-
-
-class CommandParserRaw(ABCCommandParser):
-    def __call__(self, raw_command: str) -> List[str]:
-        return [raw_command]
+ARGS_AND_KWARGS = Tuple[Tuple[Any], Dict[str, Any]]
 
 
 class CommandArgumentsCaster(ABCCommandArgumentsCaster):
@@ -48,7 +39,7 @@ class CommandArgumentsCaster(ABCCommandArgumentsCaster):
                     bound.arguments[arg_name] = tc.cast(param.annotation, values)
         return bound.args, bound.kwargs
 
-    def __call__(self, fn: Callable, tokens: List[str]) -> Tuple[Tuple[Any], Dict[str, Any]]:
+    def __call__(self, fn: Callable, tokens: List[str]) -> ARGS_AND_KWARGS:
         sig = inspect.signature(fn)
         param_names = list(sig.parameters.keys())
         args: List[Any] = []
@@ -67,8 +58,3 @@ class CommandArgumentsCaster(ABCCommandArgumentsCaster):
         # set defaults, if not set
         bound.apply_defaults()
         return self._cast_arguments(fn, *bound.args, **bound.kwargs)
-
-
-if __name__ == "__main__":
-    cp = CommandParser()
-    print(cp("a='12 123' 100"))

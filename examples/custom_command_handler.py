@@ -2,9 +2,8 @@ import re
 from typing import List
 
 from eggella import Eggella
-from eggella.command import CommandHandler, CommandParserRaw
-from eggella.command.command import ABCCommandParser
-
+from eggella.command import CommandHandler, RawCommandHandler
+from eggella.command.abc import ABCCommandParser
 app = Eggella(__name__)
 
 
@@ -13,7 +12,7 @@ class DigitParserOnly(ABCCommandParser):
         return re.findall(r"(\d+)", raw_command)
 
 
-@app.on_command("to-upper", cmd_handler=CommandHandler(parser=CommandParserRaw(), caster=None))
+@app.on_command("to-upper", cmd_handler=RawCommandHandler())
 def words_to_up(text: str):
     """convert input to upper case"""
     return text.upper()
@@ -21,7 +20,7 @@ def words_to_up(text: str):
 
 @app.on_command("sum", cmd_handler=CommandHandler(parser=DigitParserOnly()))
 def sum_(*args: int):
-    """sum all digits. ignore all symbols
+    """sum all digits. ignore all non digit symbols
 
     eg:
     ~> sum 192.168.0.1
