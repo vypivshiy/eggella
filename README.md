@@ -65,10 +65,10 @@ from typing import Optional
 from prompt_toolkit.validation import Validator
 
 from eggella import Eggella
-from eggella.fsm import IntState
+from eggella.fsm import IntStateGroup
 
 
-class LoginForm(IntState):
+class LoginForm(IntStateGroup):
     EMAIL = 0
     PASSWORD = 1
     ACCEPT = 2
