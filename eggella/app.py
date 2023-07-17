@@ -18,7 +18,7 @@ from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
 from eggella.exceptions import CommandNotFoundError, CommandParseError
-from eggella.fsm.fsm import FsmController, IntState
+from eggella.fsm.fsm import FsmController, IntStateGroup
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
 
@@ -97,10 +97,10 @@ class Eggella:
             cmd_handler=cmd_handler,
         )
 
-    def on_state(self, state: IntState):
+    def on_state(self, state: IntStateGroup):
         return self.fsm.state(state)
 
-    def register_states(self, states: Type[IntState]):
+    def register_states(self, states: Type[IntStateGroup]):
         self.fsm.attach(states)
 
     def register_command(

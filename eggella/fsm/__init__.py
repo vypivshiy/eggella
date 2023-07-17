@@ -1,1 +1,1 @@
-from eggella.fsm.fsm import IntState
+from eggella.fsm.fsm import IntStateGroup

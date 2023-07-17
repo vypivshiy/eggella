@@ -4,10 +4,10 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.validation import Validator
 
 from eggella import Eggella
-from eggella.fsm import IntState
+from eggella.fsm import IntStateGroup
 
 
-class GameStates(IntState):
+class GameStates(IntStateGroup):
     GAME = 1
     WIN = 2
     LOSE = 3
@@ -28,7 +28,7 @@ app.CTX["stats"] = {"win": 0, "lose": 0}
     "start",
     usage="`start` or `start 0 10 2` or start start_num=5 end_num=10 attempts=2",
 )
-def start_game(start_num: int = 0, end_num: int = 100, attempts: int = 5):
+def start_game(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     """start game. can configurate rules"""
     app.cmd.print_ft(f"Game config: minimal number={start_num}, max_number={end_num}, attempts={attempts}")
     app.cmd.print_ft(HTML("<seagreen>Start game:</seagreen>"))
