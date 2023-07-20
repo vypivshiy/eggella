@@ -26,7 +26,13 @@ app.CTX["stats"] = {"win": 0, "lose": 0}
 
 @app.on_command(
     "start",
-    usage="`start` or `start 0 10 2` or start start_num=5 end_num=10 attempts=2",
+    usage="`start` or `start 0 10 2` or start start_num=5 end_num=10 attempts=3",
+    nested_completions={"start_num=0": {"end_num=10": {"attempts=2": None}}},
+    nested_meta={
+        "start_num=0": "first number in range",
+        "end_num=10": "last number in range",
+        "attempts=2": "number of attempts",
+    },
 )
 def start_game(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     """start game. can configurate rules"""
