@@ -4,6 +4,7 @@ from typing import List
 from eggella import Eggella
 from eggella.command import CommandHandler, RawCommandHandler
 from eggella.command.abc import ABCCommandParser
+
 app = Eggella(__name__)
 
 
