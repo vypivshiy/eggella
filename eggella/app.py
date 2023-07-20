@@ -14,6 +14,7 @@ from typing import (
 
 from prompt_toolkit import HTML, PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
+from prompt_toolkit.completion.nested import NestedDict
 from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
@@ -89,12 +90,16 @@ class Eggella:
         *,
         usage: Optional[str] = None,
         cmd_handler: Optional[ABCCommandHandler] = None,
+        nested_completions: Optional[NestedDict] = None,
+        nested_meta: Optional[Dict[str, Any]] = None,
     ):
         return self._command_manager.command(
             key,
             short_description=short_description,
             usage=usage,
             cmd_handler=cmd_handler,
+            nested_completions=nested_completions,
+            nested_meta=nested_meta,
         )
 
     def on_state(self, state: IntStateGroup):
@@ -156,6 +161,7 @@ class Eggella:
 
     def loop(self):
         self.cmd.print_ft(self.intro)
+        self._command_manager.register_buildin_commands()
         self._handle_startup_events()
         self._handle_commands()
         self._handle_close_events()

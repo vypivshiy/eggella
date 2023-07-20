@@ -12,6 +12,8 @@ from typing import (
     Type,
 )
 
+from prompt_toolkit.completion.nested import NestedDict
+
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.completer import CommandCompleter
 from eggella.command.handler import CommandHandler
@@ -40,7 +42,6 @@ class CommandManager:
         self.commands: Dict[str, Command] = {}
         self.error_events: Dict[str, Callable[[str, BaseException, str, str], Any]] = {}
         self.handled_exceptions: _ErrorEventsMapping = {}
-        self._register_buildin_commands()
 
     @staticmethod
     def _simple_parse_arguments(raw_command: str) -> Tuple[Tuple[str, ...], Dict[str, str]]:
@@ -111,6 +112,8 @@ class CommandManager:
         short_description: Optional[str] = None,
         usage: Optional[str] = None,
         cmd_handler: Optional[ABCCommandHandler] = None,
+        nested_completions: Optional[NestedDict] = None,
+        nested_meta: Optional[Dict[str, Any]] = None,
     ):
         def decorator(func: Callable):
             self.register_command(
@@ -119,6 +122,8 @@ class CommandManager:
                 short_description=short_description,
                 usage=usage,
                 cmd_handler=cmd_handler,
+                nested_completions=nested_completions,
+                nested_meta=nested_meta,
             )
 
             @wraps(func)
@@ -137,6 +142,8 @@ class CommandManager:
         short_description: Optional[str] = None,
         usage: Optional[str] = None,
         cmd_handler: Optional[ABCCommandHandler] = None,
+        nested_completions: Optional[NestedDict] = None,
+        nested_meta: Optional[Dict[str, Any]] = None,
     ):
         if not key:
             key = func.__name__
@@ -150,6 +157,8 @@ class CommandManager:
                 handler=CommandHandler(),
                 short_description=short_description,
                 usage=usage,
+                nested_completions={key: nested_completions},
+                nested_meta=nested_meta or {},
             )
         elif cmd_handler:
             self.commands[key] = Command(
@@ -158,6 +167,8 @@ class CommandManager:
                 handler=cmd_handler,
                 short_description=short_description,
                 usage=usage,
+                nested_completions={key: nested_completions},
+                nested_meta=nested_meta or {},
             )
 
     def _help_command(self, key: Optional[str] = None):
@@ -176,9 +187,18 @@ class CommandManager:
         """exit from this application"""
         raise KeyboardInterrupt
 
-    def _register_buildin_commands(self):
-        self.register_command(self._help_command, "help", usage="help; help exit")
+    def register_buildin_commands(self):
         self.register_command(self._exit_command, "exit")
+        _nested_commands = {k: None for k in self.commands.keys()}
+        _nested_meta = {}
+        _nested_meta.update({k: v.short_desc for k, v in self.commands.items()})
+        self.register_command(
+            self._help_command,
+            "help",
+            usage="help; help exit",
+            nested_completions=_nested_commands,
+            nested_meta=_nested_meta,
+        )
 
 
 class EventManager:
