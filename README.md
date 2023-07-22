@@ -1,5 +1,5 @@
 # Eggella
-
+[ENG](README.md) [RU](README_RU.md)
 > [Eggella](https://en.wikipedia.org/wiki/Eggella) is a shield volcano in central Kamchatka. 
 > The volcano is located on the west axis of the southern Sredinny Range.
 
@@ -19,8 +19,7 @@ and built top on [prompt-toolkit](https://github.com/prompt-toolkit/python-promp
 - FSM (finite state machine) to organize a branch interface system
 - Error handlers
 - Customized events
-- Commands word completer
-- CTX storage (dict)
+- Auto create commands word completer
 - auto generate help page (like unix `man` command)
 ## Install
 
