@@ -3,6 +3,7 @@ In this tutorial we will write a "guess game".
 
 ## Prepare
 First, let's define the project plan:
+
 1. The `start` command starts the game. The game must be configured: 
    - set the range of numbers (minimum and maximum)
    - set the attempts count

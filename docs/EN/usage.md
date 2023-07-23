@@ -89,7 +89,7 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-> You can also pass arguments in named form, EG `hello name="Georgiy"`
+> You can pass arguments in named form, EG `hello name="Georgiy"`
 
 > In `sum` and `div`, when passing a non-numeric argument, the program will crash with an error.
 > This page will address this question in the [Error handle](#error-handle) section.
@@ -330,6 +330,7 @@ if __name__ == '__main__':
 Program description:
 
 To add FSM you nedd:
+
 - Declare a class by inheriting Enum class `IntStateGroup`
 - Register this state group class using `app.register_states(...)`
 - Usage `on_state(<IntStates.num>)` to call function given a state.
@@ -337,6 +338,7 @@ To add FSM you nedd:
 - IntStateGroup - IntEnum class.
 
 Methods:
+
 - `app.fsm` - access to manager FSM states
 - `app.fsm.run(<IntStates>)` - Run FSM in first state
 - `app.fsm.start(<IntStates.num>)` - Run FSM from a given state

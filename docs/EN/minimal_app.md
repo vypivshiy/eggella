@@ -30,7 +30,8 @@ if __name__ == '__main__':
 
 
 
-Program description
+Program description:
+
 - `Eggella` - main class application, register all commands and events 
 - `@app.on_startup()` - register startup events
 - `@app.on_close()` - register on close app events (on invoke `exit` or press CTRL+C)
