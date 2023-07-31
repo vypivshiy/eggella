@@ -83,7 +83,7 @@ class CommandCompleter(Completer):
             try:
                 nested, meta = completions
                 yield from NestedCommandCompleter.from_nested_dict(nested, meta).get_completions(document, complete_event)
-            except TypeError:  # unpack err
+            except (ValueError, TypeError):  # unpack err
                 yield
         else:
             # echo({'echo': None}, {})
