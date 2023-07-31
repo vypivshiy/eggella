@@ -80,10 +80,13 @@ class CommandCompleter(Completer):
         last_words = text_arr[-1]
         completions = self.__get_current_completions(text_arr[:-1])
         if all(isinstance(d, dict) for d in completions):
-            nested, meta = completions
-            yield from NestedCommandCompleter.from_nested_dict(nested, meta).get_completions(document, complete_event)
-
+            try:
+                nested, meta = completions
+                yield from NestedCommandCompleter.from_nested_dict(nested, meta).get_completions(document, complete_event)
+            except TypeError:  # unpack err
+                yield
         else:
+            # echo({'echo': None}, {})
             for completion, meta in completions:
                 if completion not in document.text_before_cursor and "=" not in last_words:
                     yield Completion(completion, -len(last_words), display_meta=meta or "")
