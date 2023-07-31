@@ -23,9 +23,11 @@ and built top on [prompt-toolkit](https://github.com/prompt-toolkit/python-promp
 - Auto generate help page (like unix `man` command)
 ## Install
 
-`pip install eggella`
-## Examples:
-### Hello world
+```shell
+pip install eggella
+```
+
+## Hello world
 ```python
 from eggella import Eggella
 
@@ -42,4 +44,4 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-See the documentation for more examples!
+See the [documentation](https://eggella.readthedocs.io/en/latest/) and [examples](examples)!

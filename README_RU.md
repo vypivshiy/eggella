@@ -23,7 +23,10 @@ API интерфейс вдохновлен проектом [vulcano](https://g
 - автоматическое создания описание команд через help (как в unix `man` команда)
 ## Установка
 
-`pip install eggella`
+```shell
+pip install eggella
+```
+
 ## Hello world
 ```python
 from eggella import Eggella
@@ -41,4 +44,4 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-Смотрите примеры в документации!
+Смотрите [документацию](https://eggella.readthedocs.io/en/latest/) и [примеры](examples)!
