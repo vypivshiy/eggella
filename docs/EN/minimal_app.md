@@ -28,6 +28,7 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![min app](../gifs/minimal_app.gif)
 
 
 Program description:

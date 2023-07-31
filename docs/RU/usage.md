@@ -11,6 +11,7 @@ from eggella import Eggella
 
 app = Eggella(__name__)
 
+
 @app.on_startup()
 def startup_1():
     print("startup 1")
@@ -19,6 +20,7 @@ def startup_1():
 @app.on_startup()
 def startup_2():
     print("startup 2")
+
 
 # These events activate if double press CTRL+C or type `exit` command
 
@@ -30,7 +32,13 @@ def close_1():
 @app.on_close()
 def close_2():
     print("close event 2")
+
+
+if __name__ == '__main__':
+    app.loop()
 ```
+
+![base events](../gifs/base_events.gif)
 
 ## Set key, add description
 По умолчанию, ключ команды берется из названия декорируемой функции. Если ключ нужно переназначить -
@@ -53,6 +61,8 @@ def echo(*args):
 if __name__ == '__main__':
     app.loop()
 ```
+
+![command key](../gifs/command_key.gif)
 
 ## Parse arguments
 По умолчанию, ключи парсятся с помощью встроенной библиотеки [shlex](https://docs.python.org/3/library/shlex.html?highlight=shlex#shlex.split)
