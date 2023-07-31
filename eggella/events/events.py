@@ -87,3 +87,33 @@ class OnCommandCompleteSuccess(ABCEvent):
 class OnCommandArgumentsException(ABCEvent):
     def __call__(self, key: str, error: BaseException, *args, **kwargs):
         pass
+
+
+class OnCommandArgumentValueError(ABCEvent):
+    _STYLE = Style.from_dict(
+        {
+            "cmd_key": "#7d7c80 italic",
+        }
+    )
+
+    def __call__(self, key: str, args: str, exc: Exception):
+        print_ft(
+            HTML(f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
+                 f"accept wrong argument type. ({', '.join(exc.args)})"),
+            style=self._STYLE,
+        )
+
+
+class OnCommandTooManyArgumentsError(ABCEvent):
+    _STYLE = Style.from_dict(
+        {
+            "cmd_key": "#7d7c80 italic",
+        }
+    )
+
+    def __call__(self, key: str, args: str, exc: Exception):
+        print_ft(
+            HTML(f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
+                 f"too many arguments passed ({', '.join(exc.args)})"),
+            style=self._STYLE,
+        )

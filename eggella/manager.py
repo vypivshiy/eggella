@@ -24,9 +24,9 @@ from eggella.events.events import (
     OnCommandNotFound,
     OnEOFError,
     OnKeyboardInterrupt,
-    OnSuggest,
+    OnSuggest, OnCommandTooManyArgumentsError, OnCommandArgumentValueError,
 )
-from eggella.exceptions import CommandNotFoundError
+from eggella.exceptions import CommandNotFoundError, CommandTooManyArgumentsError, CommandArgumentValueError
 from eggella.shortcuts.help_pager import gen_help_pager
 
 if TYPE_CHECKING:
@@ -60,6 +60,13 @@ class CommandManager:
         command = self.get(key)
         try:
             return command.handle(args)
+        except TypeError as e:
+            if 'too many positional arguments' in e.args[0]:
+                raise CommandTooManyArgumentsError("Too many arguments") from e
+            else:
+                raise e
+        except ValueError as e:
+            raise CommandArgumentValueError(f"Wrong argument type passed: {e.args}")
         except BaseException as e:
             if err_handler := self.error_events.get(command.fn.__name__):
                 handle_exceptions = self.handled_exceptions.get(command.fn.__name__, None)
@@ -214,6 +221,8 @@ class EventManager:
         self.command_not_found_event: Callable[..., None] = OnCommandNotFound()
         self.command_complete_event: Callable[..., None] = OnCommandCompleteSuccess()
         self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
+        self.command_many_args_err_event: Callable[..., None] = OnCommandTooManyArgumentsError()
+        self.command_argument_value_err_event: Callable[..., None] = OnCommandArgumentValueError()
 
     def register_event(
         self,

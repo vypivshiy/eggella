@@ -8,3 +8,11 @@ class CommandNotFoundError(BaseEgellaException):
 
 class CommandParseError(BaseEgellaException):
     pass
+
+
+class CommandTooManyArgumentsError(BaseEgellaException):
+    pass
+
+
+class CommandArgumentValueError(BaseEgellaException):
+    pass

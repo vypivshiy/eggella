@@ -18,7 +18,8 @@ from prompt_toolkit.completion.nested import NestedDict
 from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
-from eggella.exceptions import CommandNotFoundError, CommandParseError
+from eggella.exceptions import CommandNotFoundError, CommandParseError, CommandTooManyArgumentsError, \
+    CommandArgumentValueError
 from eggella.fsm.fsm import FsmController, IntStateGroup
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
@@ -195,8 +196,13 @@ class Eggella:
                 self._event_manager.command_suggest_event(key, self._command_manager.commands.keys())
             except CommandParseError:
                 self._event_manager.command_error_event(key, args)
+            except CommandTooManyArgumentsError as exc:
+                self._event_manager.command_many_args_err_event(key, args, exc)
+            except CommandArgumentValueError as exc:
+                self._event_manager.command_argument_value_err_event(key, args, exc)
             except KeyboardInterrupt:
                 if self._event_manager.kb_interrupt_event():
                     break
             except EOFError:
-                self._event_manager.eof_event()
+                if self._event_manager.eof_event():
+                    break
