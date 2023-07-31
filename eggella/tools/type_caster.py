@@ -22,11 +22,10 @@ class TypeCaster:
     def cast(cls, type_hint: Type, value: Any) -> Any:
         # extracted annotation from `inspect.get_annotations`
         if type_hint is inspect.Parameter.empty:
-            return value
+            return str(value)
 
         if sys.version_info >= (3, 9):
             type_hint = cls._typing_to_builtin(type_hint)
-
         origin = get_origin(type_hint)
         args = get_args(type_hint)
         # None
