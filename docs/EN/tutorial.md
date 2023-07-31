@@ -57,11 +57,13 @@ import random
 from eggella import Eggella
 from eggella.fsm import IntStateGroup
 
-app = Eggella("Guess game")
-
 
 class GameStates(IntStateGroup):
     GAME = 1
+
+
+app = Eggella("Guess game")
+app.register_states(GameStates)
 
 
 @app.on_command()
@@ -74,13 +76,13 @@ def start(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     }
     app.fsm.run(GameStates)
 
-    
+
 @app.on_state(GameStates.GAME)
 def game():
     if app.CTX["game"]["attempts"] == 0:
         print("You lose!")
         return app.fsm.finish()
-    
+
     count = app.CTX["game"]["attempts"]
     value = app.cmd.prompt(f"[{count}]Enter number -> ")
     value = int(value)
@@ -97,9 +99,10 @@ def game():
         print("Input should be bigger")
         return app.fsm.set(GameStates.GAME)
 
-    
+
 if __name__ == '__main__':
     app.loop()
+
 ```
 
 Minimal game logic ready, but there are problems:
@@ -120,14 +123,6 @@ from prompt_toolkit import HTML
 from eggella import Eggella
 from eggella.fsm import IntStateGroup
 
-app = Eggella("Guess game")
-NUMBER_VALIDATOR = Validator.from_callable(
-    lambda s: s.isdigit() or s in ("q", "r"), error_message="Should be number or `q, r`"
-)
-
-# game stats
-app.CTX["stats"] = {"win": 0, "lose": 0}
-
 
 class GameStates(IntStateGroup):
     GAME = 1
@@ -137,26 +132,43 @@ class GameStates(IntStateGroup):
     RESTART = 5
 
 
+app = Eggella("Guess game")
+app.register_states(GameStates)
+
+NUMBER_VALIDATOR = Validator.from_callable(
+    lambda s: s.isdigit() or s in ("q", "r"), error_message="Should be number or `q, r`"
+)
+
+# game stats
+app.CTX["stats"] = {"win": 0, "lose": 0}
+
+
 @app.on_command()
 def start(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     """Start guess game"""
     print(f"Game configuration: numbers range: {start_num}-{end_num} attempts: {attempts}")
     app.CTX["game"] = {
         "num_range": (start_num, end_num),
+        "attempts_cfg": attempts,
         "attempts": attempts,
         "digit": random.randint(start_num, end_num),
     }
     app.fsm.run(GameStates)
 
-    
+
 @app.on_state(GameStates.GAME)
 def game():
     if app.CTX["game"]["attempts"] == 0:
         print("You lose!")
         return app.fsm.set(GameStates.LOSE)
-    
+
     count = app.CTX["game"]["attempts"]
     value = app.cmd.prompt(f"[{count}]Enter number -> ", validator=NUMBER_VALIDATOR)
+    if value == "q":
+        return app.fsm.set(GameStates.EXIT)
+    elif value == "r":
+        return app.fsm.set(GameStates.RESTART)
+
     value = int(value)
 
     if value == app.CTX["game"]["digit"]:
@@ -186,6 +198,7 @@ def _restart_game():
         app.cmd.print_ft(HTML("<ansired>Restart game, Defeated</ansired>"))
         app.CTX["stats"]["lose"] += 1
         app.CTX["game"]["digit"] = random.randint(*app.CTX["game"]["num_range"])
+        app.CTX["game"]["attempts"] = app.CTX["game"]["attempts_cfg"]
         return app.fsm.set(GameStates.GAME)
     return app.fsm.set(GameStates.GAME)
 
@@ -215,6 +228,7 @@ def show_stats():
 
 if __name__ == '__main__':
     app.loop()
+
 ```
 
 Improving `start` command hints:
@@ -228,14 +242,6 @@ from prompt_toolkit import HTML
 from eggella import Eggella
 from eggella.fsm import IntStateGroup
 
-app = Eggella("Guess game")
-NUMBER_VALIDATOR = Validator.from_callable(
-    lambda s: s.isdigit() or s in ("q", "r"), error_message="Should be number or `q, r`"
-)
-
-# game stats
-app.CTX["stats"] = {"win": 0, "lose": 0}
-
 
 class GameStates(IntStateGroup):
     GAME = 1
@@ -245,31 +251,47 @@ class GameStates(IntStateGroup):
     RESTART = 5
 
 
+app = Eggella("Guess game")
+app.register_states(GameStates)
+NUMBER_VALIDATOR = Validator.from_callable(
+    lambda s: s.isdigit() or s in ("q", "r"), error_message="Should be number or `q, r`"
+)
+
+# game stats
+app.CTX["stats"] = {"win": 0, "lose": 0}
+
+
 @app.on_command(
-    nested_completions={"start_num=0": {"end_num=10": {"attempts=2": None}}},
+    nested_completions={"start_num=0": {"end_num=10": {"attempts=3": None}}},
     nested_meta={
         "start_num=0": "first number in range",
         "end_num=10": "last number in range",
-        "attempts=2": "number of attempts"})
+        "attempts=3": "number of attempts"})
 def start(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     """Start guess game"""
     print(f"Game configuration: numbers range: {start_num}-{end_num} attempts: {attempts}")
     app.CTX["game"] = {
         "num_range": (start_num, end_num),
+        "attempts_cfg": attempts,
         "attempts": attempts,
         "digit": random.randint(start_num, end_num),
     }
     app.fsm.run(GameStates)
 
-    
+
 @app.on_state(GameStates.GAME)
 def game():
     if app.CTX["game"]["attempts"] == 0:
         print("You lose!")
         return app.fsm.set(GameStates.LOSE)
-    
+
     count = app.CTX["game"]["attempts"]
     value = app.cmd.prompt(f"[{count}]Enter number -> ", validator=NUMBER_VALIDATOR)
+    if value == "q":
+        return app.fsm.set(GameStates.EXIT)
+    elif value == "r":
+        return app.fsm.set(GameStates.RESTART)
+
     value = int(value)
 
     if value == app.CTX["game"]["digit"]:
@@ -299,6 +321,7 @@ def _restart_game():
         app.cmd.print_ft(HTML("<ansired>Restart game, Defeated</ansired>"))
         app.CTX["stats"]["lose"] += 1
         app.CTX["game"]["digit"] = random.randint(*app.CTX["game"]["num_range"])
+        app.CTX["game"]["attempts"] = app.CTX["game"]["attempts_cfg"]
         return app.fsm.set(GameStates.GAME)
     return app.fsm.set(GameStates.GAME)
 
@@ -328,4 +351,5 @@ def show_stats():
 
 if __name__ == '__main__':
     app.loop()
+
 ```
