@@ -44,4 +44,6 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![quickstart](docs/gifs/quickstart.gif)
+
 See the [documentation](https://eggella.readthedocs.io/en/latest/) and [examples](examples)!

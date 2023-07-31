@@ -38,7 +38,7 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-![base events](../gifs/base_events.gif)
+![base events](../gifs/usage_events.gif)
 
 ## Set key, add description
 По умолчанию, ключ команды берется из названия декорируемой функции. Если ключ нужно переназначить -
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-![command key](../gifs/command_key.gif)
+![cmd keys](../gifs/usage_set_key.gif)
 
 ## Parse arguments
 По умолчанию, ключи парсятся с помощью встроенной библиотеки [shlex](https://docs.python.org/3/library/shlex.html?highlight=shlex#shlex.split)
@@ -98,6 +98,8 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![parse args](../gifs/usage_parse_args.gif)
+
 > Вы можете передавать именованные аргументы, например `hello name="Georgiy"`
 
 > В sum при передаче не числового аргумента программы вылетет с ошибкой.
@@ -117,6 +119,9 @@ def hello(name: str = "Anon"):
     return f"Hello, {name}"
 
 ```
+
+![](../gifs/usage_default_arg.gif)
+
 > Если вы не передадите параметр name, то по умолчанию оно будет `"Anon"`
 
 ## Custom parse arguments handler
@@ -140,6 +145,8 @@ def echo(command: str):
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_cusom_parse_args.gif)
 
 Более тонкая настройка обработки будет в разделе `Advanced`
 
@@ -184,6 +191,8 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![](../gifs/usage_nested.gif)
+
 ## Error handle
 
 В разделе [Parse arguments](#parse-arguments) при передаче не числового аргумента в команды
@@ -219,6 +228,8 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![](../gifs/usage_err_handle.gif)
+
 ## App storage
 Вы можете хранить переменные в хранилище приложения (это стандартный python словарь)
 ```python
@@ -238,6 +249,9 @@ def hello():
         return f"Hello, {name}"
     return "Hello, Anon!"
 ```
+
+![](../gifs/usage_app_ctx.gif)
+
 ## Shortcuts
 В приложении имеются алиасы некоторых методов для уменьшения числа импортов из `prompt_toolkit` 
 и они хранятся в `Eggella.cmd`
@@ -273,6 +287,8 @@ def clear():
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_shortcuts.gif)
 
 ## FSM
 FSM aka [Конечные автоматы](https://en.wikipedia.org/wiki/Finite-state_machine) 
@@ -336,6 +352,8 @@ def finish():
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_fsm.gif)
 
 Разбор программы:
 

@@ -39,7 +39,7 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-![base events](../gifs/base_events.gif)
+![base events](../gifs/usage_events.gif)
 
 ## Set key, add description
 By default, the command key is taken from the name of the function being decorated. 
@@ -59,9 +59,12 @@ def echo(*args):
     """print all passed arguments"""
     return " ".join(args)
 
+
 if __name__ == '__main__':
     app.loop()
 ```
+
+![cmd keys](../gifs/usage_set_key.gif)
 
 ## Parse arguments
 By default, keys are parsed using the built-in library [shlex](https://docs.python.org/3/library/shlex.html?highlight=shlex#shlex.split)
@@ -97,6 +100,8 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![parse args](../gifs/usage_parse_args.gif)
+
 > You can pass arguments in named form, EG `hello name="Georgiy"`
 
 > In `sum` and `div`, when passing a non-numeric argument, the program will crash with an error.
@@ -115,8 +120,13 @@ app = Eggella(__name__)
 def hello(name: str = "Anon"):
     return f"Hello, {name}"
 
+
+if __name__ == '__main__':
+    app.loop()
 ```
 > If you don't pass a name parameter, it will default to `"Anon"`
+
+![](../gifs/usage_default_arg.gif)
 
 ## Custom parse arguments handler
 In some cases, the standard argument handler may not be suitable.
@@ -139,6 +149,8 @@ def echo(command: str):
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_cusom_parse_args.gif)
 
 Command handler customization will be in the `Advanced` section
 
@@ -183,42 +195,40 @@ if __name__ == '__main__':
     app.loop()
 ```
 
+![](../gifs/usage_nested.gif)
+
 ## Error handle
 
 In the [Parse arguments](#parse-arguments) section, when passing a non-numeric argument to commands
 `sum` and `div` - the program crashes with an error. You can create an error handler for such situations:
+
 ```python
 from eggella import Eggella
 
 app = Eggella(__name__)
 
-@app.on_error(TypeError, ValueError)
-def non_digit_handle(*_, **__):
-    return "ERROR! detect non digit argument"
 
-@non_digit_handle
+@app.on_error(ZeroDivisionError)
+def zero_div_err(*_, **__):
+    return "ERROR! ZeroDivisionError"
+
+
+@zero_div_err
 @app.on_command()
 def div(a: int, b: int):
-    """sum two digits"""
-    try:
-        return a/b
-    except ZeroDivisionError:
-        return "ZeroDivisionError"
-
-    
-@non_digit_handle
-@app.on_command("sum")  
-def sum_(*digits: int):
-    """sum all passed digits"""
-    return sum(digits)
+    """div two digits"""
+    return a/b
 
 
 if __name__ == '__main__':
     app.loop()
 ```
 
+![](../gifs/usage_err_handle.gif)
+
 ## App storage
-You can storage variables in `app.CTX` storage (it's a standard python dict)
+You can store variables in `app.CTX` storage (it's a standard python dict)
+
 ```python
 from eggella import Eggella
 
@@ -226,7 +236,7 @@ app = Eggella(__name__)
 
 @app.on_command()
 def set_name(name: str):
-    """Set name"""
+    """Set name variable"""
     app.CTX["name"] = name
 
     
@@ -235,7 +245,14 @@ def hello():
     if name := app.CTX.get("name"):
         return f"Hello, {name}"
     return "Hello, Anon!"
+
+
+if __name__ == '__main__':
+    app.loop()
 ```
+
+![](../gifs/usage_app_ctx.gif)
+
 ## Shortcuts
 The application has aliases of some methods to reduce the number of imports from `prompt_toolkit`
 and they are stored in `Eggella.cmd`
@@ -271,6 +288,8 @@ def clear():
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_shortcuts.gif)
 
 ## FSM
 FSM aka [Finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine)
@@ -334,6 +353,8 @@ def finish():
 if __name__ == '__main__':
     app.loop()
 ```
+
+![](../gifs/usage_fsm.gif)
 
 Program description:
 

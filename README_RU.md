@@ -43,5 +43,6 @@ def hello():
 if __name__ == '__main__':
     app.loop()
 ```
+![quickstart](docs/gifs/quickstart.gif)
 
 Смотрите [документацию](https://eggella.readthedocs.io/en/latest/) и [примеры](examples)!
