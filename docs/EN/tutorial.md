@@ -105,6 +105,8 @@ if __name__ == '__main__':
 
 ```
 
+![](../gifs/guess_game1.gif)
+
 Minimal game logic ready, but there are problems:
 1. No number input validation
 2. Statistics not implemented
@@ -231,6 +233,8 @@ if __name__ == '__main__':
 
 ```
 
+![](../gifs/guess_game2.gif)
+
 Improving `start` command hints:
 
 ```python
@@ -353,3 +357,5 @@ if __name__ == '__main__':
     app.loop()
 
 ```
+
+![](../gifs/guess_game3.gif)
