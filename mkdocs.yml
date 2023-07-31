@@ -1,5 +1,5 @@
-site_name: Scrape Schema
-site_description: Converting any text (xml, html, plain text, stdout, etc) to python datatypes
+site_name: Eggella
+site_description: Create awesome command line applications with less effort
 strict: true
 theme:
   name: material
