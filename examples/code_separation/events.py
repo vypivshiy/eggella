@@ -1,11 +1,14 @@
-from examples.code_separation.config import app
+from eggella import Eggella
 
 
-@app.on_startup()
+app_events = Eggella("events")
+
+
+@app_events.on_startup()
 def intro():
     print("Hello! this startup event!")
 
 
-@app.on_close()
+@app_events.on_close()
 def close_event():
     print("This close event! Goodbye!")
