@@ -70,10 +70,11 @@ class OnSuggest(ABCEvent):
             if possible_ratio > ratio:
                 ratio = possible_ratio  # type: ignore
                 suggested_command = possible_command
-        print_ft(
-            HTML(f"Did your mean: <mean>{suggested_command}</mean> ?"),
-            style=self._STYLE,
-        )
+        if suggested_command:
+            print_ft(
+                HTML(f"Did your mean: <mean>{suggested_command}</mean> ?"),
+                style=self._STYLE,
+            )
 
 
 class OnCommandCompleteSuccess(ABCEvent):
