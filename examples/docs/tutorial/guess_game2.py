@@ -1,7 +1,7 @@
 import random
 
-from prompt_toolkit.validation import Validator
 from prompt_toolkit import HTML
+from prompt_toolkit.validation import Validator
 
 from eggella import Eggella
 from eggella.fsm import IntStateGroup

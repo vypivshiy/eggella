@@ -37,11 +37,11 @@ def game():
         print("You win!")
         return app.fsm.finish()
     elif value > app.CTX["game"]["digit"]:
-        app.CTX["game"]["attempts"]-=1
+        app.CTX["game"]["attempts"] -= 1
         print("Input should be less")
         return app.fsm.set(GameStates.GAME)
     else:
-        app.CTX["game"]["attempts"]-=1
+        app.CTX["game"]["attempts"] -= 1
         print("Input should be bigger")
         return app.fsm.set(GameStates.GAME)
 

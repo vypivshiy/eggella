@@ -1,7 +1,7 @@
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts.prompt import CompleteStyle
-from eggella.app import Eggella
 
+from eggella.app import Eggella
 
 app = Eggella("demo app", "# ")
 # set first epilog documentation

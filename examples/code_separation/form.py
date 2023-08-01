@@ -1,6 +1,6 @@
 from prompt_toolkit import HTML
-from eggella.fsm import IntStateGroup
 
+from eggella.fsm import IntStateGroup
 from examples.code_separation.config import app
 
 

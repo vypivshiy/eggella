@@ -15,6 +15,7 @@ def startup_2():
 
 # These events activate if double press CTRL+C or type `exit` command
 
+
 @app.on_close()
 def close_1():
     print("close event 1")

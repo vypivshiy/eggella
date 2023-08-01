@@ -12,7 +12,7 @@ def zero_div_err(*_, **__):
 @app.on_command()
 def div(a: int, b: int):
     """div two digits"""
-    return a/b
+    return a / b
 
 
 if __name__ == '__main__':

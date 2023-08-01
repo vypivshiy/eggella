@@ -99,8 +99,10 @@ class OnCommandArgumentValueError(ABCEvent):
 
     def __call__(self, key: str, args: str, exc: Exception):
         print_ft(
-            HTML(f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
-                 f"accept wrong argument type. ({', '.join(exc.args)})"),
+            HTML(
+                f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
+                f"accept wrong argument type. ({', '.join(exc.args)})"
+            ),
             style=self._STYLE,
         )
 
@@ -114,7 +116,9 @@ class OnCommandTooManyArgumentsError(ABCEvent):
 
     def __call__(self, key: str, args: str, exc: Exception):
         print_ft(
-            HTML(f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
-                 f"too many arguments passed ({', '.join(exc.args)})"),
+            HTML(
+                f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
+                f"too many arguments passed ({', '.join(exc.args)})"
+            ),
             style=self._STYLE,
         )

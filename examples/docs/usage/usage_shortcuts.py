@@ -1,7 +1,7 @@
-from eggella import Eggella
-
 from prompt_toolkit import HTML
 from prompt_toolkit.validation import Validator
+
+from eggella import Eggella
 
 app = Eggella(__name__)
 

@@ -1,7 +1,7 @@
 import random
 
-from prompt_toolkit.validation import Validator
 from prompt_toolkit import HTML
+from prompt_toolkit.validation import Validator
 
 from eggella import Eggella
 from eggella.fsm import IntStateGroup
@@ -30,7 +30,9 @@ app.CTX["stats"] = {"win": 0, "lose": 0}
     nested_meta={
         "start_num=0": "first number in range",
         "end_num=10": "last number in range",
-        "attempts=3": "number of attempts"})
+        "attempts=3": "number of attempts",
+    },
+)
 def start(start_num: int = 0, end_num: int = 10, attempts: int = 3):
     """Start guess game"""
     print(f"Game configuration: numbers range: {start_num}-{end_num} attempts: {attempts}")
