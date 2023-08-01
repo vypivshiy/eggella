@@ -1,5 +1,6 @@
 import inspect
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from prompt_toolkit.completion.nested import NestedDict
 
@@ -7,14 +8,16 @@ from eggella.command.abc import ABCCommandHandler
 from eggella.command.handler import CommandHandler
 
 
-class Command(NamedTuple):
+@dataclass
+class Command:
     fn: Callable[..., Any]
     key: str
     handler: ABCCommandHandler = CommandHandler()
     usage: Optional[str] = None
     short_description: Optional[str] = None
     nested_completions: Optional[NestedDict] = None
-    nested_meta: Dict[str, Any] = {}
+    nested_meta: Dict[str, Any] = field(default_factory=dict)
+    is_visible: bool = True
 
     def handle(self, command_text: str) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
         args, kwargs = self.handler.handle(self.fn, command_text)

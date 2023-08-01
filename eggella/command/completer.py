@@ -82,7 +82,9 @@ class CommandCompleter(Completer):
         if all(isinstance(d, dict) for d in completions):
             try:
                 nested, meta = completions
-                yield from NestedCommandCompleter.from_nested_dict(nested, meta).get_completions(document, complete_event)
+                yield from NestedCommandCompleter.from_nested_dict(nested, meta).get_completions(
+                    document, complete_event
+                )
             except (ValueError, TypeError):  # unpack err
                 yield
         else:

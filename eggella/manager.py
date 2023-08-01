@@ -19,14 +19,20 @@ from eggella.command.completer import CommandCompleter
 from eggella.command.handler import CommandHandler
 from eggella.command.objects import Command
 from eggella.events.events import (
+    OnCommandArgumentValueError,
     OnCommandCompleteSuccess,
     OnCommandError,
     OnCommandNotFound,
+    OnCommandTooManyArgumentsError,
     OnEOFError,
     OnKeyboardInterrupt,
-    OnSuggest, OnCommandTooManyArgumentsError, OnCommandArgumentValueError,
+    OnSuggest,
 )
-from eggella.exceptions import CommandNotFoundError, CommandTooManyArgumentsError, CommandArgumentValueError
+from eggella.exceptions import (
+    CommandArgumentValueError,
+    CommandNotFoundError,
+    CommandTooManyArgumentsError,
+)
 from eggella.shortcuts.help_pager import gen_help_pager
 
 if TYPE_CHECKING:
@@ -58,6 +64,10 @@ class CommandManager:
 
     def exec(self, key: str, args: str):
         command = self.get(key)
+
+        if not command.is_visible:
+            raise CommandNotFoundError
+
         try:
             return command.handle(args)
         except TypeError as e:
@@ -66,7 +76,7 @@ class CommandManager:
             else:
                 raise e
         except ValueError as e:
-            raise CommandArgumentValueError(f"Wrong argument type passed: {e.args}")
+            raise CommandArgumentValueError(f"Wrong argument type passed: {e.args}") from e
         except BaseException as e:
             if err_handler := self.error_events.get(command.fn.__name__):
                 handle_exceptions = self.handled_exceptions.get(command.fn.__name__, None)
@@ -105,7 +115,7 @@ class CommandManager:
 
     @property
     def all_completions(self) -> List[Tuple[str, str]]:
-        return [com.completion for com in self.commands.values()]
+        return [com.completion for com in self.commands.values() if com.is_visible]
 
     def get(self, key: str) -> Command:
         if command := self.commands.get(key, None):
@@ -121,6 +131,7 @@ class CommandManager:
         cmd_handler: Optional[ABCCommandHandler] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
+        is_visible: bool = True,
     ):
         def decorator(func: Callable):
             self.register_command(
@@ -131,6 +142,7 @@ class CommandManager:
                 cmd_handler=cmd_handler,
                 nested_completions=nested_completions,
                 nested_meta=nested_meta,
+                is_visible=is_visible,
             )
 
             @wraps(func)
@@ -151,6 +163,7 @@ class CommandManager:
         cmd_handler: Optional[ABCCommandHandler] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
+        is_visible: bool = True,
     ):
         if not key:
             key = func.__name__
@@ -166,6 +179,7 @@ class CommandManager:
                 usage=usage,
                 nested_completions={key: nested_completions},
                 nested_meta=nested_meta or {},
+                is_visible=is_visible,
             )
         elif cmd_handler:
             self.commands[key] = Command(
@@ -176,6 +190,7 @@ class CommandManager:
                 usage=usage,
                 nested_completions={key: nested_completions},
                 nested_meta=nested_meta or {},
+                is_visible=is_visible,
             )
 
     def _help_command(self, key: Optional[str] = None):

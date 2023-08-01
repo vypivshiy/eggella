@@ -18,8 +18,13 @@ from prompt_toolkit.completion.nested import NestedDict
 from prompt_toolkit.formatted_text import FormattedText
 
 from eggella.command.abc import ABCCommandHandler
-from eggella.exceptions import CommandNotFoundError, CommandParseError, CommandTooManyArgumentsError, \
-    CommandArgumentValueError
+from eggella.command.objects import Command
+from eggella.exceptions import (
+    CommandArgumentValueError,
+    CommandNotFoundError,
+    CommandParseError,
+    CommandTooManyArgumentsError,
+)
 from eggella.fsm.fsm import FsmController, IntStateGroup
 from eggella.manager import CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
@@ -93,6 +98,7 @@ class Eggella:
         cmd_handler: Optional[ABCCommandHandler] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
+        is_visible: bool = True,
     ):
         return self._command_manager.command(
             key,
@@ -101,6 +107,7 @@ class Eggella:
             cmd_handler=cmd_handler,
             nested_completions=nested_completions,
             nested_meta=nested_meta,
+            is_visible=is_visible,
         )
 
     def on_state(self, state: IntStateGroup):
@@ -115,15 +122,12 @@ class Eggella:
         key: Optional[str] = None,
         short_description: Optional[str] = None,
         *,
+        is_visible: bool = True,
         usage: Optional[str] = None,
         cmd_handler: Optional[ABCCommandHandler] = None,
     ):
         self._command_manager.register_command(
-            func,
-            key,
-            short_description=short_description,
-            usage=usage,
-            cmd_handler=cmd_handler,
+            func, key, short_description=short_description, usage=usage, cmd_handler=cmd_handler, is_visible=is_visible
         )
 
     @overload
@@ -175,6 +179,9 @@ class Eggella:
         for event in self._event_manager.close_events:
             event()
 
+    def get_command(self, key: str) -> Command:
+        return self._command_manager.get(key)
+
     def _handle_commands(self):
         while True:
             try:
@@ -193,7 +200,9 @@ class Eggella:
                     self._event_manager.command_complete_event(result)
             except CommandNotFoundError:
                 self._event_manager.command_not_found_event(key, args)
-                self._event_manager.command_suggest_event(key, self._command_manager.commands.keys())
+                self._event_manager.command_suggest_event(
+                    key, [c.key for c in self._command_manager.commands.values() if c.is_visible]
+                )
             except CommandParseError:
                 self._event_manager.command_error_event(key, args)
             except CommandTooManyArgumentsError as exc:
