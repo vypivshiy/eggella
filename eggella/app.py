@@ -41,7 +41,7 @@ _DEFAULT_INTRO_MSG = HTML(
 class Eggella:
     __app_instances__: Dict[str, "Eggella"] = {}
 
-    def __new__(cls, app_name: str, msg: PromptLikeMsg = "~> ") -> "Eggella":
+    def __new__(cls, app_name: str, msg: PromptLikeMsg = "> ") -> "Eggella":
         if _app := cls.__app_instances__.get(app_name):
             return _app
 
@@ -49,7 +49,7 @@ class Eggella:
         cls.__app_instances__[app_name] = new_app
         return new_app
 
-    def __init__(self, app_name: str, msg: PromptLikeMsg = "~> "):
+    def __init__(self, app_name: str, msg: PromptLikeMsg = "> "):
         self.app_name = app_name
         self.prompt_msg = msg
         self.session: PromptSession = PromptSession(msg)
@@ -61,6 +61,7 @@ class Eggella:
         # managers
         self._command_manager: CommandManager = CommandManager(self)
         self._event_manager = EventManager(self)
+
         # TODO create blueprints manager
         self._blueprints: List["Eggella"] = []
         self._loaded_blueprints: Set[str] = set()
@@ -134,6 +135,9 @@ class Eggella:
                 if self._command_manager.commands.get(key) and not self.overwrite_commands_from_blueprints:
                     raise TypeError(f"Command '{key}' already register")
                 self._command_manager.commands[key] = command
+
+            for key, fsm_state in blueprint.fsm.fsm_storage.items():
+                self.fsm.fsm_storage[key] = fsm_state
 
             for start_ev in blueprint._event_manager.startup_events:
                 self._event_manager.startup_events.append(start_ev)
