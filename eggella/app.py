@@ -9,7 +9,7 @@ from typing import (
     Tuple,
     Type,
     Union,
-    overload,
+    overload, Set,
 )
 
 from prompt_toolkit import HTML, PromptSession
@@ -60,6 +60,10 @@ class Eggella:
         # managers
         self._command_manager: CommandManager = CommandManager(self)
         self._event_manager = EventManager(self)
+        # TODO create blueprints manager
+        self._blueprints: List["Eggella"] = []
+        self._loaded_blueprints: Set[str] = set()
+        self.overwrite_commands_from_blueprints: bool = False
 
         # fsm
         self.fsm = FsmController(self)
@@ -116,6 +120,28 @@ class Eggella:
     def register_states(self, states: Type[IntStateGroup]):
         self.fsm.attach(states)
 
+    def register_blueprint(self, *apps: "Eggella"):
+        for app in apps:
+            self._blueprints.append(app)
+
+    def _load_blueprints(self):
+        for blueprint in self._blueprints:
+            if blueprint.app_name in self._loaded_blueprints:
+                continue
+
+            for key, command in blueprint._command_manager.commands.items():
+                if self._command_manager.commands.get(key) and not self.overwrite_commands_from_blueprints:
+                    raise TypeError(f"Command '{key}' already register")
+                self._command_manager.commands[key] = command
+
+            for start_ev in blueprint._event_manager.startup_events:
+                self._event_manager.startup_events.append(start_ev)
+
+            for close_ev in blueprint._event_manager.close_events:
+                self._event_manager.close_events.append(close_ev)
+
+            self._loaded_blueprints.add(blueprint.app_name)
+
     def register_command(
         self,
         func: Callable,
@@ -166,6 +192,7 @@ class Eggella:
 
     def loop(self):
         self.cmd.print_ft(self.intro)
+        self._load_blueprints()
         self._command_manager.register_buildin_commands()
         self._handle_startup_events()
         self._handle_commands()
