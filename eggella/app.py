@@ -257,7 +257,11 @@ class Eggella:
     def _handle_commands(self):
         while True:
             try:
-                completer = FuzzyCompleter(completer=self._command_manager.get_completer())
+                if self.fsm.is_active():
+                    self.fsm.current()
+                    continue
+
+                completer = FuzzyCompleter(completer=self.command_manager.get_completer())
                 result = self.session.prompt(self.prompt_msg, completer=completer)
                 if not result:
                     continue
@@ -268,22 +272,22 @@ class Eggella:
                 else:
                     key, args = tokens[0], tokens[1]
 
-                if result := self._command_manager.exec(key, args):
-                    self._event_manager.command_complete_event(result)
+                if result := self.command_manager.exec(key, args):
+                    self.event_manager.command_complete_event(result)
             except CommandNotFoundError:
-                self._event_manager.command_not_found_event(key, args)
-                self._event_manager.command_suggest_event(
+                self.event_manager.command_not_found_event(key, args)
+                self.event_manager.command_suggest_event(
                     key, [c.key for c in self._command_manager.commands.values() if c.is_visible]
                 )
             except CommandParseError:
-                self._event_manager.command_error_event(key, args)
+                self.event_manager.command_error_event(key, args)
             except CommandTooManyArgumentsError as exc:
-                self._event_manager.command_many_args_err_event(key, args, exc)
+                self.event_manager.command_many_args_err_event(key, args, exc)
             except CommandArgumentValueError as exc:
-                self._event_manager.command_argument_value_err_event(key, args, exc)
+                self.event_manager.command_argument_value_err_event(key, args, exc)
             except KeyboardInterrupt:
-                if self._event_manager.kb_interrupt_event():
+                if self.event_manager.kb_interrupt_event():
                     break
             except EOFError:
-                if self._event_manager.eof_event():
+                if self.event_manager.eof_event():
                     break
