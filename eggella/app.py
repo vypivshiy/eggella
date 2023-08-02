@@ -71,18 +71,22 @@ class Eggella:
 
     @property
     def blueprint_manager(self):
+        """get blueprint manager"""
         return self._blueprint_manager
 
     @property
     def command_manager(self) -> CommandManager:
+        """get command manager"""
         return self._command_manager
 
     @property
     def event_manager(self) -> EventManager:
+        """get event manager"""
         return self._event_manager
 
     @property
     def documentation(self):
+        """get full manual text for help render"""
         return self._doc
 
     @documentation.setter
@@ -91,6 +95,7 @@ class Eggella:
 
     @property
     def intro(self):
+        """startup intro text"""
         return self._intro
 
     @intro.setter
@@ -98,12 +103,18 @@ class Eggella:
         self._intro = text
 
     def on_startup(self):
+        """register event manager on startup app"""
         return self.event_manager.startup()
 
     def on_close(self):
+        """register event manager on close app"""
         return self.event_manager.close()
 
     def on_error(self, *errors: Type[BaseException]):
+        """create error handler
+
+        :param errors: types of Exceptions to be handled
+        """
         return self.command_manager.on_error(*errors)
 
     def on_command(
@@ -117,6 +128,16 @@ class Eggella:
         nested_meta: Optional[Dict[str, Any]] = None,
         is_visible: bool = True,
     ):
+        """Register command
+
+        :param key: command key. if not set - set key as function name
+        :param short_description: short description
+        :param usage: usage example
+        :param cmd_handler: Command handler
+        :param nested_completions: nested completer
+        :param nested_meta: nested meta information
+        :param is_visible: set visible command
+        """
         return self._command_manager.command(
             key,
             short_description=short_description,
@@ -128,12 +149,26 @@ class Eggella:
         )
 
     def on_state(self, state: IntStateGroup):
+        """register state handler
+
+        :param state: IntStateGroup state
+        """
         return self.fsm.state(state)
 
     def register_states(self, states: Type[IntStateGroup]):
+        """Register group states in this application
+
+        :param states: IntStateGroup class
+        :return:
+        """
         self.fsm.attach(states)
 
     def register_blueprint(self, *apps: "Eggella"):
+        """register blueprint for extension. Add on_startup, on_close, on_command, on_state events
+
+        :param apps: Eggella applications
+        :return:
+        """
         self.blueprint_manager.register_blueprints(*apps)
 
     def _load_blueprints(self):
@@ -149,6 +184,7 @@ class Eggella:
         usage: Optional[str] = None,
         cmd_handler: Optional[ABCCommandHandler] = None,
     ):
+        """Register command from function"""
         self._command_manager.register_command(
             func, key, short_description=short_description, usage=usage, cmd_handler=cmd_handler, is_visible=is_visible
         )
@@ -179,15 +215,26 @@ class Eggella:
         self._event_manager.register_event(name, func)
 
     def has_command(self, key: str) -> bool:
+        """return True if command is registered
+
+        :param key: command key
+        :return:
+        """
         return bool(self.command_manager.commands.get(key, None))
 
     def remove_command(self, key: str):
+        """remove command from this application. raise KeyError, if command not founded
+
+        :param key: command key
+        :return:
+        """
         if self.has_command(key):
             self.command_manager.commands.pop(key)
         else:
             raise KeyError
 
     def loop(self):
+        """Run this application"""
         self.cmd.print_ft(self.intro)
         self._load_blueprints()
         self._command_manager.register_buildin_commands()
@@ -204,7 +251,8 @@ class Eggella:
             event()
 
     def get_command(self, key: str) -> Command:
-        return self._command_manager.get(key)
+        """get command object from command_manager"""
+        return self.command_manager.get(key)
 
     def _handle_commands(self):
         while True:
