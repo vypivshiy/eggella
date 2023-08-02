@@ -8,6 +8,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Set,
     Tuple,
     Type,
 )
@@ -292,3 +293,37 @@ class EventManager:
             return wrapper
 
         return decorator
+
+
+class BlueprintManager:
+    def __init__(self, main_app: "Eggella"):
+        self.app = main_app
+
+        self.blueprints: List["Eggella"] = []
+        self._loaded_blueprints: Set[str] = set()
+
+    def register_blueprints(self, *bp_apps: "Eggella"):
+        for bp_app in bp_apps:
+            self.blueprints.append(bp_app)
+
+    def load_blueprints(self):
+        for blueprint in self.blueprints:
+            if blueprint.app_name in self._loaded_blueprints:
+                continue
+            # register commands to main app
+            for key, command in blueprint.command_manager.commands.items():
+                if self.app.command_manager.commands.get(key) and not self.app.overwrite_commands_from_blueprints:
+                    raise TypeError(f"Command '{key}' already register")
+                self.app.command_manager.commands[key] = command
+            # register FSM groups to main app
+            for key, fsm_state in blueprint.fsm.fsm_storage.items():
+                self.app.fsm.fsm_storage[key] = fsm_state
+
+            # register events
+            for start_ev in blueprint.event_manager.startup_events:
+                self.app.event_manager.startup_events.append(start_ev)
+
+            for close_ev in blueprint.event_manager.close_events:
+                self.app.event_manager.close_events.append(close_ev)
+
+            self._loaded_blueprints.add(blueprint.app_name)

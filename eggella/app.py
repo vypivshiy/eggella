@@ -6,7 +6,6 @@ from typing import (
     List,
     Literal,
     Optional,
-    Set,
     Tuple,
     Type,
     Union,
@@ -27,7 +26,7 @@ from eggella.exceptions import (
     CommandTooManyArgumentsError,
 )
 from eggella.fsm.fsm import FsmController, IntStateGroup
-from eggella.manager import CommandManager, EventManager
+from eggella.manager import BlueprintManager, CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
 
 PromptLikeMsg = Union[str, FormattedText, Callable[..., Union[FormattedText, List[Tuple[str, str]]]]]
@@ -55,20 +54,32 @@ class Eggella:
         self.session: PromptSession = PromptSession(msg)
         self.cmd = CmdShortCuts()
 
+        # app context storage
         self.CTX: Dict[Hashable, Any] = {}
+        # config
         self._intro: Union[HTML, PromptLikeMsg] = _DEFAULT_INTRO_MSG
         self._doc: str = ""
+        self.overwrite_commands_from_blueprints: bool = False
+
         # managers
         self._command_manager: CommandManager = CommandManager(self)
         self._event_manager = EventManager(self)
-
-        # TODO create blueprints manager
-        self._blueprints: List["Eggella"] = []
-        self._loaded_blueprints: Set[str] = set()
-        self.overwrite_commands_from_blueprints: bool = False
+        self._blueprint_manager = BlueprintManager(self)
 
         # fsm
         self.fsm = FsmController(self)
+
+    @property
+    def blueprint_manager(self):
+        return self._blueprint_manager
+
+    @property
+    def command_manager(self) -> CommandManager:
+        return self._command_manager
+
+    @property
+    def event_manager(self) -> EventManager:
+        return self._event_manager
 
     @property
     def documentation(self):
@@ -87,13 +98,13 @@ class Eggella:
         self._intro = text
 
     def on_startup(self):
-        return self._event_manager.startup()
+        return self.event_manager.startup()
 
     def on_close(self):
-        return self._event_manager.close()
+        return self.event_manager.close()
 
     def on_error(self, *errors: Type[BaseException]):
-        return self._command_manager.on_error(*errors)
+        return self.command_manager.on_error(*errors)
 
     def on_command(
         self,
@@ -123,29 +134,10 @@ class Eggella:
         self.fsm.attach(states)
 
     def register_blueprint(self, *apps: "Eggella"):
-        for app in apps:
-            self._blueprints.append(app)
+        self.blueprint_manager.register_blueprints(*apps)
 
     def _load_blueprints(self):
-        for blueprint in self._blueprints:
-            if blueprint.app_name in self._loaded_blueprints:
-                continue
-
-            for key, command in blueprint._command_manager.commands.items():
-                if self._command_manager.commands.get(key) and not self.overwrite_commands_from_blueprints:
-                    raise TypeError(f"Command '{key}' already register")
-                self._command_manager.commands[key] = command
-
-            for key, fsm_state in blueprint.fsm.fsm_storage.items():
-                self.fsm.fsm_storage[key] = fsm_state
-
-            for start_ev in blueprint._event_manager.startup_events:
-                self._event_manager.startup_events.append(start_ev)
-
-            for close_ev in blueprint._event_manager.close_events:
-                self._event_manager.close_events.append(close_ev)
-
-            self._loaded_blueprints.add(blueprint.app_name)
+        self.blueprint_manager.load_blueprints()
 
     def register_command(
         self,
@@ -187,11 +179,11 @@ class Eggella:
         self._event_manager.register_event(name, func)
 
     def has_command(self, key: str) -> bool:
-        return bool(self._command_manager.commands.get(key, None))
+        return bool(self.command_manager.commands.get(key, None))
 
     def remove_command(self, key: str):
         if self.has_command(key):
-            self._command_manager.commands.pop(key)
+            self.command_manager.commands.pop(key)
         else:
             raise KeyError
 
