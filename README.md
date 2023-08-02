@@ -15,12 +15,13 @@ and built top on [prompt-toolkit](https://github.com/prompt-toolkit/python-promp
 
 - Python 3.8+ support
 - Command line arguments auto cast from function annotations
-- Cross-platform (prompt-toolkit guarantees)
+- Cross-platform ([prompt-toolkit guarantees](https://github.com/prompt-toolkit/python-prompt-toolkit#prompt_toolkit-features))
 - FSM (finite state machine) to organize a branch interface system
 - Error handlers
 - Customized events
-- Auto create commands word completer
-- Auto generate help page (like unix `man` command)
+- Auto create auto suggest commands completer
+- Auto generate help, and man page
+
 ## Install
 
 ```shell
@@ -37,6 +38,7 @@ app = Eggella(__name__)
 
 @app.on_command("hello")
 def hello():
+    """print `Hello, world!`"""
     return "Hello, world!"
 
 
@@ -44,6 +46,6 @@ if __name__ == '__main__':
     app.loop()
 ```
 
-![quickstart](docs/gifs/quickstart.gif)
+![quickstart](docs/gifs/hello_world.gif)
 
 See the [documentation](https://eggella.readthedocs.io/en/latest/) and [examples](examples)!
