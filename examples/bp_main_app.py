@@ -1,9 +1,9 @@
-from bp_plugins import bp1, bp2
+import bp_plugins
 
 from eggella import Eggella
 
 app = Eggella(__name__)
-app.register_blueprint(bp1, bp2)
+app.register_blueprint(bp_plugins.bp1, bp_plugins.bp2)
 
 
 if __name__ == '__main__':
