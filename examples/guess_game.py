@@ -79,12 +79,10 @@ def game():
     elif value < app.CTX["game"]["digit"]:
         app.CTX["game"]["attempts"] -= 1
         app.cmd.print_ft(HTML(f"Should be <ansired>bigger</ansired> than {value}"))
-        return app.fsm.set(GameStates.GAME)
 
     elif value > app.CTX["game"]["digit"]:
         app.CTX["game"]["attempts"] -= 1
         app.cmd.print_ft(HTML(f"Should be <ansired>less</ansired> than {value}"))
-        return app.fsm.set(GameStates.GAME)
 
 
 @app.on_state(GameStates.EXIT)
@@ -102,7 +100,6 @@ def _restart_game():
         app.cmd.print_ft(HTML("<ansired>Restart game, Defeated</ansired>"))
         app.CTX["stats"]["lose"] += 1
         app.CTX["game"] = app.CTX["last_config"].copy()
-        return app.fsm.set(GameStates.GAME)
     return app.fsm.set(GameStates.GAME)
 
 
