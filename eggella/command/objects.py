@@ -32,8 +32,15 @@ class Command:
     def docstring(self) -> str:
         return inspect.getdoc(self.fn) or ""
 
+    def get_short_description(self):
+        if self.short_description:
+            return self.short_description
+        elif self.docstring:
+            return self.docstring.split("\n")[0].strip()
+        return ""
+
     @property
-    def short_desc(self):
+    def command_description(self):
         arg_list = ", ".join(f"{arg}" for arg in self.arguments)
         if self.short_description:
             if arg_list:
@@ -46,7 +53,7 @@ class Command:
 
     @property
     def completion(self) -> Tuple[str, str]:
-        return self.key, self.short_desc
+        return self.key, self.command_description
 
     @property
     def help(self):

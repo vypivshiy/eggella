@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from eggella.command.objects import Command
 
 
-def _render_text(app: "Eggella", commands: Iterable["Command"]):
+def _render_man_text(app: "Eggella", commands: Iterable["Command"]):
     """
     {{APP DOCUMENTATION}}
 
@@ -64,8 +64,9 @@ def _render_text(app: "Eggella", commands: Iterable["Command"]):
     return text
 
 
-def gen_help_pager(app: "Eggella", commands: Iterable["Command"]):
-    text = _render_text(app, commands)
+def gen_man_pager(app: "Eggella"):
+    commands = app.command_manager.commands.values()
+    text = _render_man_text(app, commands)
     search_field = SearchToolbar(text_if_not_searching=[("class:not-searching", "Press '/' to start searching.")])
 
     text_area = TextArea(
@@ -102,7 +103,6 @@ def gen_help_pager(app: "Eggella", commands: Iterable["Command"]):
     @bindings.add("c-c")
     @bindings.add("q")
     def _(event):
-        "Quit."
         event.app.exit()
 
     style = Style.from_dict(
@@ -124,3 +124,20 @@ def gen_help_pager(app: "Eggella", commands: Iterable["Command"]):
         full_screen=True,
     )
     application.run()
+
+
+def gen_help_commands(app: "Eggella") -> str:
+    text = ""
+    commands = app.command_manager.commands.values()
+    max_len_key = max(
+        (f"{c.key} (" + ", ".join(f"{arg}" for arg in c.arguments) + ")" for c in commands if c.is_visible),
+        key=len,
+    )
+    max_spacer_len = len(max_len_key) - 1
+
+    for command in commands:
+        if command.is_visible:
+            args = "(" + ", ".join(f"{arg}" for arg in command.arguments) + ")" if command.arguments else ""
+            spacer_len = max_spacer_len - len(command.key + args)
+            text += f"{command.key} {args} {' ' * spacer_len} {command.get_short_description()}\n"
+    return text

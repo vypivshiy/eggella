@@ -34,7 +34,7 @@ from eggella.exceptions import (
     CommandNotFoundError,
     CommandTooManyArgumentsError,
 )
-from eggella.shortcuts.help_pager import gen_help_pager
+from eggella.shortcuts.help_pager import gen_help_commands, gen_man_pager
 
 if TYPE_CHECKING:
     from eggella.app import Eggella
@@ -195,15 +195,17 @@ class CommandManager:
             )
 
     def _help_command(self, key: Optional[str] = None):
-        """show help or show pager documentation for all commands if not argument passed"""
+        """show help or print all available commands if not argument passed"""
         if not key:
-            commands = self.commands.values()
-            gen_help_pager(self._app, commands)
-            return
+            return gen_help_commands(self._app)
         elif comma := self.commands.get(key):
-            return f"{key} - {comma.short_desc}"
+            return f"{key} {comma.command_description}"
         else:
             raise CommandNotFoundError
+
+    def _man_page(self):
+        """generate man page view with all commands"""
+        gen_man_pager(self._app)
 
     @staticmethod
     def _exit_command():
@@ -212,9 +214,12 @@ class CommandManager:
 
     def register_buildin_commands(self):
         self.register_command(self._exit_command, "exit")
+        self.register_command(self._man_page, ".man")
+
+        # generate nested for help command
         _nested_commands = {k: None for k in self.commands.keys()}
         _nested_meta = {}
-        _nested_meta.update({k: v.short_desc for k, v in self.commands.items()})
+        _nested_meta.update({k: v.command_description for k, v in self.commands.items()})
         self.register_command(
             self._help_command,
             "help",
