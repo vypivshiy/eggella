@@ -62,6 +62,10 @@ class Fsm:
         self.ctx.clear()
         self._current_state = None
 
+    def actual(self):
+        if self._current_state:
+            return self._exec_state(self._current_state)
+
     def next(self):
         index = self._all_states.index(self._current_state)
         if index < len(self._all_states):
@@ -128,6 +132,9 @@ class FsmController:
                 f"by `register_states({state.__class__.__name__}) method`"
             )
         return self.fsm_storage[state.__class__.__name__].on_state(state)
+
+    def current(self):
+        return self._current_fsm.actual()
 
     def run(self, state: Union[IntStateGroup, Type[IntStateGroup]]):
         if isinstance(state, IntStateGroup):
