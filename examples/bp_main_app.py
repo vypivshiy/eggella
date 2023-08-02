@@ -1,5 +1,4 @@
 from bp_plugins import bp1, bp2
-
 from eggella import Eggella
 
 app = Eggella(__name__)
