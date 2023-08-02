@@ -376,3 +376,85 @@ Methods:
 - `app.fsm.set(<IntStates.num>)` - Move to a given state
 - `app.fsm[<key>]` - FSM storage access (get, set)
 - `app.fsm.finish()` - Close FSM. **All written values in the FSM storage are deleted automatically.**
+
+## Blueprints
+
+Eggella has blueprints implemented and the idea simular to
+[flask Blueprint](https://flask.palletsprojects.com/en/2.3.x/tutorial/views/#create-a-blueprint)
+
+You can separate code or organize plugin system
+
+> bp_plugins.py
+```python
+from eggella import Eggella
+
+# all app instances should be unique name
+bp1 = Eggella("plugin 1")
+bp2 = Eggella("plugin 2")
+
+__all__ = ["bp1", "bp2"]
+
+
+@bp1.on_startup()
+def plugin_loaded():
+    print("Plugin 1 loaded")
+
+
+@bp1.on_command("plugin_1")
+def cmd1():
+    """this command from bp1 instance"""
+    return "Plugin 1 command"
+
+
+@bp2.on_startup()
+def plugin_loaded2():
+    print("Plugin 2 loaded")
+
+
+@bp2.on_command("plugin_2")
+def cmd2():
+    """this command from bp2 instance"""
+    return "Plugin 2 command"
+```
+
+> bp_main_app.py
+```python
+from eggella import Eggella
+
+import bp_plugins
+
+
+app = Eggella(__name__)
+app.register_blueprint(
+    bp_plugins.bp1, 
+    bp_plugins.bp2
+)
+
+
+if __name__ == '__main__':
+    app.loop()
+```
+
+![](../gifs/blueprints.gif)
+
+### Notes
+
+- Command keys should be **unique**, if you want to overwrite commands from
+`register_blueprint()` method, disable overwrite command flag:
+
+```python
+from eggella import Eggella
+
+app = Eggella(__name__)
+# enable overwrite commands from blueprints
+app.overwrite_commands_from_blueprints = True
+
+# app.register_blueprint()
+```
+
+- Of the applications that are passed to the `register_blueprint()` method, 
+only the following events are registered:
+  - on_startup()
+  - on_close()
+  - on_command()
+  - on_state()

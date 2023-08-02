@@ -375,3 +375,85 @@ if __name__ == '__main__':
 - `app.fsm.set(<IntStates.num>)` - Переход на заданное состояние
 - `app.fsm[<key>]` - Доступ к хранилищу значений текущего FSM
 - `app.fsm.finish()` - Завершение FSM. **Все записанные значения в хранилище FSM удаляются автоматически.**
+
+## Blueprints
+
+В Eggella реализованы blueprints и идея схожа с 
+[flask Blueprint](https://flask.palletsprojects.com/en/2.3.x/tutorial/views/#create-a-blueprint)
+
+Вы можете разделять код или организовать систему плагинов
+
+> bp_plugins.py
+```python
+from eggella import Eggella
+
+# all app instances should be unique name
+bp1 = Eggella("plugin 1")
+bp2 = Eggella("plugin 2")
+
+__all__ = ["bp1", "bp2"]
+
+
+@bp1.on_startup()
+def plugin_loaded():
+    print("Plugin 1 loaded")
+
+
+@bp1.on_command("plugin_1")
+def cmd1():
+    """this command from bp1 instance"""
+    return "Plugin 1 command"
+
+
+@bp2.on_startup()
+def plugin_loaded2():
+    print("Plugin 2 loaded")
+
+
+@bp2.on_command("plugin_2")
+def cmd2():
+    """this command from bp2 instance"""
+    return "Plugin 2 command"
+```
+
+> bp_main_app.py
+```python
+from eggella import Eggella
+
+import bp_plugins
+
+
+app = Eggella(__name__)
+app.register_blueprint(
+    bp_plugins.bp1, 
+    bp_plugins.bp2
+)
+
+
+if __name__ == '__main__':
+    app.loop()
+```
+
+![](../gifs/blueprints.gif)
+
+### Замечания
+
+- Ключи команд должны быть **уникальные**, если вы хотите изменять команды через
+`register_blueprint()`, то можно отключить проверку:
+
+```python
+from eggella import Eggella
+
+app = Eggella(__name__)
+# enable overwrite commands from blueprints
+app.overwrite_commands_from_blueprints = True
+
+# app.register_blueprint()
+```
+
+- Из приложений, которые предаются в метод `register_blueprint()` регистрируются только следующие
+события:
+  - on_startup()
+  - on_close()
+  - on_command()
+  - on_state()
