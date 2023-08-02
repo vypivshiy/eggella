@@ -1,9 +1,7 @@
-from eggella import Eggella
-
 from prompt_toolkit import HTML
 
+from eggella import Eggella
 from eggella.fsm import IntStateGroup
-
 
 app_form = Eggella("forms")
 

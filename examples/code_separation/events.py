@@ -1,6 +1,5 @@
 from eggella import Eggella
 
-
 app_events = Eggella("events")
 
 
