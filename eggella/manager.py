@@ -318,7 +318,9 @@ class BlueprintManager:
             # register commands to main app
             for key, command in blueprint.command_manager.commands.items():
                 if self.app.command_manager.commands.get(key) and not self.app.overwrite_commands_from_blueprints:
-                    raise TypeError(f"Command '{key}' already register")
+                    raise TypeError(f"Command '{key}' from blueprint `{blueprint.app_name}` already registered. "
+                                    f"If you need overwrite commands set `overwrite_commands_from_blueprints=True`"
+                                    )
                 self.app.command_manager.commands[key] = command
             # register FSM groups to main app
             for key, fsm_state in blueprint.fsm.fsm_storage.items():
