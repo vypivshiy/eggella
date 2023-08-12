@@ -3,10 +3,8 @@ from typing import (
     Callable,
     Dict,
     Hashable,
-    List,
     Literal,
     Optional,
-    Tuple,
     Type,
     Union,
     overload,
@@ -15,8 +13,8 @@ from typing import (
 from prompt_toolkit import HTML, PromptSession
 from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
 from prompt_toolkit.completion.nested import NestedDict
-from prompt_toolkit.formatted_text import FormattedText
 
+from eggella._types import ARGS_AND_KWARGS, LITERAL_EVENTS, PromptLikeMsg
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.objects import Command
 from eggella.exceptions import (
@@ -28,8 +26,6 @@ from eggella.exceptions import (
 from eggella.fsm.fsm import FsmController, IntStateGroup
 from eggella.manager import BlueprintManager, CommandManager, EventManager
 from eggella.shortcuts.cmd_shortcuts import CmdShortCuts
-
-PromptLikeMsg = Union[str, FormattedText, Callable[..., Union[FormattedText, List[Tuple[str, str]]]]]
 
 _DEFAULT_INTRO_MSG = HTML(
     "<ansired>Press |CTRL+C| or |CTRL+D| or type</ansired> exit <ansired>for close this app</ansired>\n"
@@ -71,22 +67,22 @@ class Eggella:
 
     @property
     def blueprint_manager(self):
-        """get blueprint manager"""
+        """Get blueprint manager"""
         return self._blueprint_manager
 
     @property
     def command_manager(self) -> CommandManager:
-        """get command manager"""
+        """Get command manager"""
         return self._command_manager
 
     @property
     def event_manager(self) -> EventManager:
-        """get event manager"""
+        """Get event manager"""
         return self._event_manager
 
     @property
     def documentation(self):
-        """get full manual text for help render"""
+        """Get full manual text for help render"""
         return self._doc
 
     @documentation.setter
@@ -103,15 +99,15 @@ class Eggella:
         self._intro = text
 
     def on_startup(self):
-        """register event manager on startup app"""
+        """Register event manager on startup app"""
         return self.event_manager.startup()
 
     def on_close(self):
-        """register event manager on close app"""
+        """Register event manager on close app"""
         return self.event_manager.close()
 
     def on_error(self, *errors: Type[BaseException]):
-        """create error handler
+        """Create error handler
 
         :param errors: types of Exceptions to be handled
         """
@@ -123,7 +119,7 @@ class Eggella:
         short_description: Optional[str] = None,
         *,
         usage: Optional[str] = None,
-        cmd_handler: Optional[ABCCommandHandler] = None,
+        cmd_handler: Optional[Callable[[Callable[..., Any], str], ARGS_AND_KWARGS]] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
         is_visible: bool = True,
@@ -207,9 +203,7 @@ class Eggella:
 
     def register_event(
         self,
-        name: Literal[
-            "start", "close", "kb_interrupt", "eof", "command_not_found", "command_complete", "command_suggest"
-        ],
+        name: LITERAL_EVENTS,
         func: Optional[Callable],
     ) -> None:
         self._event_manager.register_event(name, func)
@@ -254,40 +248,50 @@ class Eggella:
         """get command object from command_manager"""
         return self.command_manager.get(key)
 
+    def _handle_error(self, key, args, exc):
+        try:
+            raise exc
+        except CommandNotFoundError:
+            self.event_manager.command_not_found_event(key, args)
+            if self.event_manager.command_suggest_event:
+                self.event_manager.command_suggest_event(
+                    key, [c.key for c in self._command_manager.commands.values() if c.is_visible]
+                )
+        except CommandParseError:
+            self.event_manager.command_error_event(key, args)
+        except CommandTooManyArgumentsError as exc:
+            self.event_manager.command_many_args_err_event(key, args, exc)
+        except CommandArgumentValueError as exc:
+            self.event_manager.command_argument_value_err_event(key, args, exc)
+
     def _handle_commands(self):
         while True:
             try:
+                # if FSM activated - handle first
                 if self.fsm.is_active():
                     self.fsm.current()
                     continue
 
+                # handle main app input
                 completer = FuzzyCompleter(completer=self.command_manager.get_completer())
                 result = self.session.prompt(self.prompt_msg, completer=completer)
                 if not result:
                     continue
 
                 if (tokens := result.split(" ", 1)) and len(tokens) == 1:
-                    key = tokens[0]
-                    args = ""
+                    key, args = tokens[0], ""
                 else:
                     key, args = tokens[0], tokens[1]
-
+                # handle input command
                 if result := self.command_manager.exec(key, args):
                     self.event_manager.command_complete_event(result)
-            except CommandNotFoundError:
-                self.event_manager.command_not_found_event(key, args)
-                self.event_manager.command_suggest_event(
-                    key, [c.key for c in self._command_manager.commands.values() if c.is_visible]
-                )
-            except CommandParseError:
-                self.event_manager.command_error_event(key, args)
-            except CommandTooManyArgumentsError as exc:
-                self.event_manager.command_many_args_err_event(key, args, exc)
-            except CommandArgumentValueError as exc:
-                self.event_manager.command_argument_value_err_event(key, args, exc)
+            # exit exceptions
             except KeyboardInterrupt:
                 if self.event_manager.kb_interrupt_event():
                     break
             except EOFError:
                 if self.event_manager.eof_event():
                     break
+            # command errors handle
+            except Exception as exc:
+                self._handle_error(key, args, exc)
