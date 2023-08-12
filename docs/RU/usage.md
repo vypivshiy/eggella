@@ -81,7 +81,7 @@ def hello(name: str):
 
 @app.on_command()
 def div(a: int, b: int):
-    """sum two digits"""
+    """div two digits"""
     try:
         return a/b
     except ZeroDivisionError:
@@ -127,7 +127,7 @@ def hello(name: str = "Anon"):
 ## Custom parse arguments handler
 В некоторых случаях может не подойти стандартный обработчик аргументов.
 
-В комплекте идет `RawCommandHandler`- игнорирует токенизацию аргументов и приведение типов 
+В комплекте идет `RawCommandHandler`- игнорирует токенизацию аргументов и приведение типов, а
 передает в функцию всю строку.
 
 ```python
@@ -358,9 +358,10 @@ if __name__ == '__main__':
 Разбор программы:
 
 Чтобы добавить FSM надо:
-- Объявить класс, унаследовав Enum класс `IntStateGroup`
-- Зарегистрировать класс состояний в приложении `app.register_states(...)`
-- Использовать декоратор `on_state(<IntStates.num>)` для вызова функций при заданном состоянии.
+
+1. Объявить класс, унаследовав Enum класс `IntStateGroup
+2. Зарегистрировать класс состояний в приложении `app.register_states(...)`
+3. Использовать декоратор `on_state(<IntStates.num>)` для вызова функций при заданном состоянии.
 
 Описание:
 - IntStateGroup - IntEnum класс для назначения состояний.

@@ -83,7 +83,7 @@ def hello(name: str):
 
 @app.on_command()
 def div(a: int, b: int):
-    """sum two digits"""
+    """div two digits"""
     try:
         return a/b
     except ZeroDivisionError:
@@ -360,9 +360,9 @@ Program description:
 
 To add FSM you nedd:
 
-- Declare a class by inheriting Enum class `IntStateGroup`
-- Register this state group class using `app.register_states(...)`
-- Usage `on_state(<IntStates.num>)` to call function given a state.
+1. Declare a class by inheriting Enum class `IntStateGroup`
+2. Register this state group class using `app.register_states(...)`
+3. Usage `on_state(<IntStates.num>)` to call function given a state.
 
 - IntStateGroup - IntEnum class.
 
