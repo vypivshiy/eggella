@@ -15,7 +15,7 @@ from typing import (
 
 from prompt_toolkit.completion.nested import NestedDict
 
-from eggella.command.abc import ABCCommandHandler
+from eggella._types import CALLABLE_ERR_HANDLER
 from eggella.command.completer import CommandCompleter
 from eggella.command.handler import CommandHandler
 from eggella.command.objects import Command
@@ -92,7 +92,7 @@ class CommandManager:
         return CommandCompleter(self)  # type: ignore
 
     def on_error(self, *errors: Type[BaseException]):
-        def decorator(handler: Callable[[str, BaseException, str, str], Any]):
+        def decorator(handler: CALLABLE_ERR_HANDLER):
             @wraps(handler)
             def decorator_wrapper(func: Callable[..., Any]):
                 if not self.error_events.get(func.__name__):
@@ -129,7 +129,7 @@ class CommandManager:
         *,
         short_description: Optional[str] = None,
         usage: Optional[str] = None,
-        cmd_handler: Optional[ABCCommandHandler] = None,
+        cmd_handler: Optional[Callable[[Callable[..., Any], str], Tuple[Tuple[Any, ...], Dict[str, Any]]]] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
         is_visible: bool = True,
@@ -161,7 +161,7 @@ class CommandManager:
         *,
         short_description: Optional[str] = None,
         usage: Optional[str] = None,
-        cmd_handler: Optional[ABCCommandHandler] = None,
+        cmd_handler: Optional[Callable[[Callable[..., Any], str], Tuple[Tuple[Any, ...], Dict[str, Any]]]] = None,
         nested_completions: Optional[NestedDict] = None,
         nested_meta: Optional[Dict[str, Any]] = None,
         is_visible: bool = True,
@@ -182,7 +182,7 @@ class CommandManager:
                 nested_meta=nested_meta or {},
                 is_visible=is_visible,
             )
-        elif cmd_handler:
+        else:
             self.commands[key] = Command(
                 fn=func,
                 key=key,
@@ -235,7 +235,7 @@ class EventManager:
         self.startup_events: List[Callable] = []
         self.close_events: List[Callable] = []
         self.errors_events: Dict[str, Callable] = {}
-
+        # TODO typing more accurately
         self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
         self.eof_event: Callable[..., bool] = OnEOFError()
         self.command_error_event: Callable[..., None] = OnCommandError()
@@ -318,9 +318,10 @@ class BlueprintManager:
             # register commands to main app
             for key, command in blueprint.command_manager.commands.items():
                 if self.app.command_manager.commands.get(key) and not self.app.overwrite_commands_from_blueprints:
-                    raise TypeError(f"Command '{key}' from blueprint `{blueprint.app_name}` already registered. "
-                                    f"If you need overwrite commands set `overwrite_commands_from_blueprints=True`"
-                                    )
+                    raise TypeError(
+                        f"Command '{key}' from blueprint `{blueprint.app_name}` already registered. "
+                        f"If you need overwrite commands set `overwrite_commands_from_blueprints=True`"
+                    )
                 self.app.command_manager.commands[key] = command
             # register FSM groups to main app
             for key, fsm_state in blueprint.fsm.fsm_storage.items():

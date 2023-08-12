@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from prompt_toolkit.completion.nested import NestedDict
 
-from eggella.command.abc import ABCCommandHandler
+from eggella._types import ARGS_AND_KWARGS
 from eggella.command.handler import CommandHandler
 
 
@@ -12,7 +12,7 @@ from eggella.command.handler import CommandHandler
 class Command:
     fn: Callable[..., Any]
     key: str
-    handler: ABCCommandHandler = CommandHandler()
+    handler: Callable[[Callable[..., Any], str], ARGS_AND_KWARGS] = CommandHandler()
     usage: Optional[str] = None
     short_description: Optional[str] = None
     nested_completions: Optional[NestedDict] = None
@@ -20,7 +20,7 @@ class Command:
     is_visible: bool = True
 
     def handle(self, command_text: str) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
-        args, kwargs = self.handler.handle(self.fn, command_text)
+        args, kwargs = self.handler(self.fn, command_text)
         return self.fn(*args, **kwargs)
 
     @property

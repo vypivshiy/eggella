@@ -19,7 +19,7 @@ class CommandArgumentsCaster(ABCCommandArgumentsCaster):
         return token
 
     @staticmethod
-    def _cast_arguments(fn, *args, **kwargs):
+    def _cast_arguments(fn: Callable, *args: Any, **kwargs: Any):
         sig = inspect.signature(fn)
         params = sig.parameters
         tc = TypeCaster()
