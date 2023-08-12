@@ -1,50 +1,49 @@
 Set Shell bash
 Set TypingSpeed 0.1
-Sleep 500ms
 Type "python3 usage_fsm.py"
 Enter
 Sleep 500ms
-Tab 4
-Enter
-Sleep 500ms
-Down 5
-Sleep 1s
-Type "q"
-Sleep 500ms
+Tab
 Tab
 Sleep 500ms
-Down
-Type " test@ts"
-Backspace
-Type "est."
+Type " test@test.com 123456"
 Sleep 500ms
-Type "coom"
-Sleep 500ms
-Type " 10"
-Backspace
-Type "23456"
 Enter
 Sleep 2s
-Type "a"
-Down
-Enter
-Sleep 1s
-Type "test@"
-Sleep 500ms
-Type "tst.com"
-Enter
-Sleep 500ms
 Tab
-Type "/"
+Sleep 1.5s
+Tab
+Enter
+Sleep 1s
+Type "test@tst.ru"
 Sleep 500ms
-Backspace
+Enter
 Type ".."
-Sleep 1s
-Backspace 2
-Type "123456"
+Sleep 500ms
+Enter
+Sleep 2s
+Type "test123@tst.ru"
+Sleep 500ms
+Enter
+Type "1234567"
+Sleep 500ms
+Enter
+Sleep 1.5s
+Type "n"
+Enter
+Sleep 500ms
+Type "1234567890123"
 Enter
 Sleep 1s
-Type "6"
+Type "y"
 Enter
-Ctrl+C
+Sleep 2s
+Type "e"
+Sleep 500ms
+Down
+Sleep 500ms
+Enter
+Sleep 500ms
+Type "y"
+Sleep 500ms
 
