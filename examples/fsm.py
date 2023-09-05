@@ -13,11 +13,11 @@ class LoginForm(IntStateGroup):
 
 
 # prompt validators
-password_validator = Validator.from_callable(lambda s: len(s) > 6 or s == "..",
-                                             error_message="password len should be bigger than 6")
+password_validator = Validator.from_callable(
+    lambda s: len(s) > 6 or s == "..", error_message="password len should be bigger than 6"
+)
 
-email_validator = Validator.from_callable(lambda s: "@" in s or s == "..",
-                                          error_message="email is not valid")
+email_validator = Validator.from_callable(lambda s: "@" in s or s == "..", error_message="email is not valid")
 
 confirm_validator = Validator.from_callable(lambda s: s in {"y", "n"})
 
