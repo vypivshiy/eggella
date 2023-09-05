@@ -26,6 +26,8 @@ from eggella.events.events import (
     OnCommandNotFound,
     OnCommandTooManyArgumentsError,
     OnEOFError,
+    OnFSMEOFError,
+    OnFSMKeyboardInterrupt,
     OnKeyboardInterrupt,
     OnSuggest,
 )
@@ -236,14 +238,19 @@ class EventManager:
         self.close_events: List[Callable] = []
         self.errors_events: Dict[str, Callable] = {}
         # TODO typing more accurately
+        # loop events
         self.kb_interrupt_event: Callable[..., bool] = OnKeyboardInterrupt()
         self.eof_event: Callable[..., bool] = OnEOFError()
+        # commands events
         self.command_error_event: Callable[..., None] = OnCommandError()
         self.command_not_found_event: Callable[..., None] = OnCommandNotFound()
         self.command_complete_event: Callable[..., None] = OnCommandCompleteSuccess()
         self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
         self.command_many_args_err_event: Callable[..., None] = OnCommandTooManyArgumentsError()
         self.command_argument_value_err_event: Callable[..., None] = OnCommandArgumentValueError()
+        # FSM events
+        self.fsm_kb_interrupt_event: Callable[..., bool] = OnFSMKeyboardInterrupt()
+        self.fsm_eof_error_event: Callable[..., bool] = OnFSMEOFError()
 
     def register_event(
         self,

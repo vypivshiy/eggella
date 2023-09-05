@@ -265,13 +265,21 @@ class Eggella:
             self.event_manager.command_argument_value_err_event(key, args, exc)
 
     def _handle_commands(self):
+        """application loop"""
         while True:
             try:
-                # if FSM activated - handle first
+                # if FSM activated - handle this
                 if self.fsm.is_active():
-                    self.fsm.current()
-                    continue
-
+                    # handle fsm events
+                    try:
+                        self.fsm.current()
+                        continue
+                    except KeyboardInterrupt:
+                        if self.event_manager.fsm_kb_interrupt_event():
+                            self.fsm.finish()
+                    except EOFError:
+                        if self.event_manager.fsm_eof_error_event():
+                            self.fsm.finish()
                 # handle main app input
                 completer = FuzzyCompleter(completer=self.command_manager.get_completer())
                 result = self.session.prompt(self.prompt_msg, completer=completer)
