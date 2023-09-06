@@ -11,9 +11,9 @@ from typing import (
 )
 
 from prompt_toolkit import HTML, PromptSession
-from prompt_toolkit.completion.fuzzy_completer import FuzzyCompleter
 from prompt_toolkit.completion.nested import NestedDict
 
+from eggella._patches import FuzzyCompleter
 from eggella._types import ARGS_AND_KWARGS, LITERAL_EVENTS, PromptLikeMsg
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.objects import Command
