@@ -3,10 +3,10 @@ from typing import Any, Iterable
 
 from prompt_toolkit import print_formatted_text as print_ft
 from prompt_toolkit.formatted_text.html import HTML
-from prompt_toolkit.shortcuts.prompt import confirm
 from prompt_toolkit.styles import Style
 
 from eggella.events.abc import ABCEvent
+from eggella.shortcuts.cmd_shortcuts import yes_no_exit
 
 
 class OnStartup(ABCEvent):
@@ -24,7 +24,7 @@ class OnClose(ABCEvent):
 class OnKeyboardInterrupt(ABCEvent):
     def __call__(self) -> bool:
         try:
-            if confirm("Exit?"):
+            if yes_no_exit():
                 return True
         except (KeyboardInterrupt, EOFError):
             return True
@@ -34,7 +34,7 @@ class OnKeyboardInterrupt(ABCEvent):
 class OnEOFError(ABCEvent):
     def __call__(self):
         try:
-            if confirm("Exit?"):
+            if yes_no_exit():
                 exit(0)
         except (KeyboardInterrupt, EOFError):
             exit(0)
