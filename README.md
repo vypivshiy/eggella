@@ -36,7 +36,7 @@ from eggella import Eggella
 app = Eggella(__name__)
 
 
-@app.on_command("hello")
+@app.on_command()
 def hello():
     """print `Hello, world!`"""
     return "Hello, world!"
