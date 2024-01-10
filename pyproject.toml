@@ -26,9 +26,8 @@ classifiers = [
 dependencies = ["prompt-toolkit"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/eggella#readme"
-Issues = "https://github.com/unknown/eggella/issues"
-Source = "https://github.com/unknown/eggella"
+Documentation = "https://eggella.readthedocs.io/en/latest/"
+Source = "https://github.com/vypivshiy/eggella"
 
 [tool.hatch.version]
 path = "eggella/__init__.py"
