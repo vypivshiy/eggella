@@ -3,12 +3,12 @@ from typing import List
 
 from eggella import Eggella
 from eggella.command import CommandHandler, RawCommandHandler
-from eggella.command.abc import ABCCommandParser
+from eggella.command.abc import ABCTokensParser
 
 app = Eggella(__name__)
 
 
-class DigitParserOnly(ABCCommandParser):
+class DigitParserOnly(ABCTokensParser):
     def __call__(self, raw_command: str) -> List[str]:
         return re.findall(r"(\d+)", raw_command)
 
@@ -19,7 +19,7 @@ def words_to_up(text: str):
     return text.upper()
 
 
-@app.on_command("sum", cmd_handler=CommandHandler(parser=DigitParserOnly()))
+@app.on_command("sum", cmd_handler=CommandHandler(tokenizer=DigitParserOnly()))
 def sum_(*args: int):
     """sum all digits. ignore all non digit symbols
 

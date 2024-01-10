@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class NestedCommandCompleter(Completer):
+    """Modification Nested completer with meta information"""
+
     def __init__(
         self, options: Dict[str, Union[Completer, None]], ignore_case: bool = True, meta: Optional[Dict] = None
     ) -> None:

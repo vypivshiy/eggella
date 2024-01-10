@@ -122,3 +122,13 @@ class OnCommandTooManyArgumentsError(ABCEvent):
             ),
             style=self._STYLE,
         )
+
+
+class OnFSMKeyboardInterrupt(ABCEvent):
+    def __call__(self) -> bool:
+        return True
+
+
+class OnFSMEOFError(ABCEvent):
+    def __call__(self) -> bool:
+        return True

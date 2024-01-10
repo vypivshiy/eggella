@@ -13,9 +13,13 @@ class LoginForm(IntStateGroup):
 
 
 # prompt validators
-password_validator = Validator.from_callable(lambda s: len(s) > 6, error_message="password len should be bigger than 6")
+password_validator = Validator.from_callable(
+    lambda s: len(s) > 6 or s == "..", error_message="password len should be bigger than 6"
+)
 
-email_validator = Validator.from_callable(lambda s: "@" in s, error_message="email is not valid")
+email_validator = Validator.from_callable(lambda s: "@" in s or s == "..", error_message="email is not valid")
+
+confirm_validator = Validator.from_callable(lambda s: s in {"y", "n"})
 
 
 app = Eggella(__name__)
@@ -38,21 +42,33 @@ def auth(email: Optional[str] = None, password: Optional[str] = None):
 
 @app.on_state(LoginForm.EMAIL)
 def email():
-    app.fsm.ctx["email"] = app.cmd.prompt("Enter email > ", validator=email_validator)
+    result = app.cmd.prompt("Enter email > ", validator=email_validator)
+    if result == "..":
+        return app.fsm.finish()
+    app.fsm.ctx["email"] = result
     app.fsm.next()
 
 
 @app.on_state(LoginForm.PASSWORD)
 def password():
     # alias from prompt_toolkit.prompt functon
-    app.fsm.ctx["password"] = app.cmd.prompt("Enter password > ", is_password=True, validator=password_validator)
+    result = app.cmd.prompt("Enter password > ", is_password=True, validator=password_validator)
+    if result == "..":
+        return app.fsm.prev()
+    app.fsm.ctx["password"] = result
     app.fsm.next()
 
 
 @app.on_state(LoginForm.ACCEPT)
 def finish():
+    print("Your input:")
+    print("email:", app.fsm["email"])
+    print("if correct, type `y` or `n` for back prev step")
+    confirm = app.cmd.prompt("(y/n)> ", validator=confirm_validator)
+    if confirm == "n":
+        return app.fsm.prev()
     auth(app.fsm["email"], app.fsm["password"])
-    # need close FSM
+    # don't forget to close FSM!
     app.fsm.finish()
 
 
