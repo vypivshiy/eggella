@@ -24,6 +24,7 @@ from eggella.events.events import (
     OnCommandCompleteSuccess,
     OnCommandError,
     OnCommandNotFound,
+    OnCommandRuntimeError,
     OnCommandTooManyArgumentsError,
     OnEOFError,
     OnFSMEOFError,
@@ -34,6 +35,7 @@ from eggella.events.events import (
 from eggella.exceptions import (
     CommandArgumentValueError,
     CommandNotFoundError,
+    CommandRuntimeError,
     CommandTooManyArgumentsError,
 )
 from eggella.shortcuts.help_pager import gen_help_commands, gen_man_pager
@@ -70,25 +72,32 @@ class CommandManager:
 
         if not command.is_visible:
             raise CommandNotFoundError
-
         try:
             return command.handle(args)
         except TypeError as e:
             if 'too many positional arguments' in e.args[0]:
-                raise CommandTooManyArgumentsError("Too many arguments") from e
+                raise CommandTooManyArgumentsError(e.args[0]) from e
+            elif 'missing a required argument: ' in e.args[0]:
+                raise CommandArgumentValueError(e.args[0]) from e
             else:
-                raise e
+                msg = f"{e!r} in `{command.fn.__name__}` callable"
+                raise CommandRuntimeError(msg) from e
         except ValueError as e:
-            raise CommandArgumentValueError(f"Wrong argument type passed: {e.args}") from e
-        except BaseException as e:
+            if e.args and 'invalid literal for' in e.args[0]:
+                raise CommandArgumentValueError(e.args[0]) from e
+            msg = f"{e!r} in `{command.fn.__name__}` callable"
+            raise CommandRuntimeError(msg) from e
+        except Exception as e:
             if err_handler := self.error_events.get(command.fn.__name__):
                 handle_exceptions = self.handled_exceptions.get(command.fn.__name__, None)
                 if handle_exceptions and any(e.__class__ == exc for exc in handle_exceptions):
                     _args, _kwargs = self._simple_parse_arguments(args)
                     return err_handler(key, e, *_args, **_kwargs)
                 else:
-                    raise e
-            raise e
+                    msg = f"{e!r} in `{command.fn.__name__}` callable"
+                    raise CommandRuntimeError(msg)
+            msg = f"{e!r} in `{command.fn.__name__}` callable"
+            raise CommandRuntimeError(msg)
 
     def get_completer(self) -> CommandCompleter:
         return CommandCompleter(self)  # type: ignore
@@ -248,6 +257,7 @@ class EventManager:
         self.command_suggest_event: Optional[Callable[..., None]] = OnSuggest()
         self.command_many_args_err_event: Callable[..., None] = OnCommandTooManyArgumentsError()
         self.command_argument_value_err_event: Callable[..., None] = OnCommandArgumentValueError()
+        self.command_runtime_err_event: Callable[..., None] = OnCommandRuntimeError()
         # FSM events
         self.fsm_kb_interrupt_event: Callable[..., bool] = OnFSMKeyboardInterrupt()
         self.fsm_eof_error_event: Callable[..., bool] = OnFSMEOFError()
@@ -327,7 +337,7 @@ class BlueprintManager:
                 if self.app.command_manager.commands.get(key) and not self.app.overwrite_commands_from_blueprints:
                     raise TypeError(
                         f"Command '{key}' from blueprint `{blueprint.app_name}` already registered. "
-                        f"If you need overwrite commands set `overwrite_commands_from_blueprints=True`"
+                        f"For overwrite commands set `overwrite_commands_from_blueprints=True`"
                     )
                 self.app.command_manager.commands[key] = command
             # register FSM groups to main app

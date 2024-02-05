@@ -17,10 +17,12 @@ from eggella._patches import FuzzyCompleter
 from eggella._types import ARGS_AND_KWARGS, LITERAL_EVENTS, PromptLikeMsg
 from eggella.command.abc import ABCCommandHandler
 from eggella.command.objects import Command
+from eggella.events.events import OnCommandRuntimeError
 from eggella.exceptions import (
     CommandArgumentValueError,
     CommandNotFoundError,
     CommandParseError,
+    CommandRuntimeError,
     CommandTooManyArgumentsError,
 )
 from eggella.fsm.fsm import FsmController, IntStateGroup
@@ -257,6 +259,8 @@ class Eggella:
                 self.event_manager.command_suggest_event(
                     key, [c.key for c in self._command_manager.commands.values() if c.is_visible]
                 )
+        except CommandRuntimeError as exc:
+            self.event_manager.command_runtime_err_event(key, args, exc)
         except CommandParseError:
             self.event_manager.command_error_event(key, args)
         except CommandTooManyArgumentsError as exc:
