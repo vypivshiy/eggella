@@ -6,10 +6,7 @@ from prompt_toolkit import print_formatted_text, prompt
 from prompt_toolkit.formatted_text import merge_formatted_text
 from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 from prompt_toolkit.keys import Keys
-from prompt_toolkit.shortcuts.prompt import (
-    PromptSession,
-    confirm,
-)
+from prompt_toolkit.shortcuts.prompt import PromptSession, confirm
 
 E = KeyPressEvent
 
