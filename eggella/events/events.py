@@ -1,3 +1,4 @@
+import traceback
 from difflib import SequenceMatcher
 from typing import Any, Iterable
 
@@ -99,12 +100,34 @@ class OnCommandArgumentValueError(ABCEvent):
 
     def __call__(self, key: str, args: str, exc: Exception):
         print_ft(
-            HTML(
-                f"<ansired>Error!</ansired> `<cmd_key>{key}</cmd_key>` "
-                f"accept wrong argument type. ({', '.join(exc.args)})"
-            ),
+            HTML(f"<ansired>Error!</ansired> command `<cmd_key>{key}</cmd_key>` {exc.args[0]}"),
             style=self._STYLE,
         )
+
+
+class OnCommandRuntimeError(ABCEvent):
+    _STYLE = Style.from_dict(
+        {
+            "cmd_key": "#7d7c80 italic",
+            'exc_stack': '#ffa200'
+        }
+    )
+
+
+    def _fmt_tb(self):
+        tb = traceback.format_exc()
+        tb_lines = [
+            f'<ansired>{line}</ansired>' if not line.startswith(' ')
+            else f'<exc_stack>{line}</exc_stack>' for line in tb.split('\n')]
+        print_ft(*[HTML(i) for i in tb_lines], sep='\n', style=self._STYLE)
+
+    def __call__(self, key: str, args: str, exc: Exception):
+        print_ft(
+            HTML(f"<ansired>Error!</ansired> command `<cmd_key>{key}</cmd_key>` with args: {args}"),
+            style=self._STYLE,
+        )
+        print_ft(HTML("Full traceback:"), style=self._STYLE)
+        self._fmt_tb()
 
 
 class OnCommandTooManyArgumentsError(ABCEvent):

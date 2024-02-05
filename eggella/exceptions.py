@@ -16,3 +16,7 @@ class CommandTooManyArgumentsError(BaseEgellaException):
 
 class CommandArgumentValueError(BaseEgellaException):
     pass
+
+
+class CommandRuntimeError(BaseEgellaException):
+    pass
