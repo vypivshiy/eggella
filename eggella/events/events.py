@@ -116,9 +116,16 @@ class OnCommandRuntimeError(ABCEvent):
 
     def _fmt_tb(self):
         tb = traceback.format_exc()
+        # decrease stack trace for throw useful information
+        # (FSM call stack increase issue)
+        lines, seen = [], set()
+        for line in tb.split('\n'):
+            if line not in seen:
+                lines.append(line)
+                seen.add(line)
         tb_lines = [
-            f'<ansired>{line}</ansired>' if not line.startswith(' ')
-            else f'<exc_stack>{line}</exc_stack>' for line in tb.split('\n')]
+            f'<exc_stack>{line}</exc_stack>' if line.startswith(' ')
+            else f'<ansired>{line}</ansired>' for line in lines]
         print_ft(*[HTML(i) for i in tb_lines], sep='\n', style=self._STYLE)
 
     def __call__(self, key: str, args: str, exc: Exception):
